@@ -6,7 +6,7 @@ export default class Game{
     }
 
     // player, user : {
-    //     id : String,
+    //     id : socket,
     //     code : String,
     //     isHost : Boolean
     // }

@@ -7,7 +7,7 @@ export default class GameManager{
     }
 
     // player : {
-    //     id : String,
+    //     id : socket,
     //     code : String,
     //     isHost : Boolean
     // }
