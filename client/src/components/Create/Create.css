@@ -86,86 +86,103 @@
 
 
 /* LeftSideBar */
+/* LeftSideBar */
 
-.sidebar{
-    height: 93vh;
-    width: 15%;
-    border-right: 1px solid black;
+.sidebar {
+  height: 93vh;
+  width: 15%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid black;
+  overflow-y: scroll;
 }
 
-.quiz:hover{
+.quiz:hover {
   cursor: pointer;
 }
 
-.sidebar .quiz{
-    padding: 10px;
-    color: black;
+.sidebar .quiz {
+  padding: 10px;
+  color: black;
 }
 
-.sidebar .quiz p{
-    margin-left: 20px;
-    margin-bottom: 0;
+.sidebar .quiz p {
+  margin-left: 20px;
+  margin-bottom: 0;
 }
 
-.sidebar .question{
-    color: grey;
-    text-align: center;
-    border: 3px solid rgb(49, 147, 221);
-    border-radius: 5px;
-    margin-left: 20px;
+.sidebar .question {
+  color: grey;
+  text-align: center;
+  border: 3px solid grey;
+  border-radius: 5px;
+  margin-left: 20px;
+  /* rgb(49, 147, 221) */
 }
 
-.sidebar .timer-image{
-    display: flex;
+.sidebar .question:hover{
+  border: 3px solid rgb(49, 147, 221);
+  
 }
 
-.sidebar .timer{
-    position: relative;
-    margin-top: 10px;
-    margin-left: 10px;
+.quiz.selected .question {
+  border: 3px solid #007FFF; /* Change border color to red for selected quiz item */
 }
 
-.sidebar .img3{
-    height: 30px;
+.sidebar .timer-image {
+  display: flex;
+}
+
+.sidebar .timer {
+  position: relative;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.sidebar .img3 {
+  height: 30px;
 }
 
 .sidebar .text-block {
-    font-size: 10px;
-    position: absolute;
-    bottom: 17px;
-    right: 9px;
-    color: #D3D3D3;
-    /* padding-left: 20px;
-    padding-right: 20px; */
-  }
-  
-.sidebar .questionImage{
-    height: 50px;
-    width: 70px;
-    padding: 10px;
-    border: 2px dotted #D3D3D3;
-    /* margin-top: 15px; */
-    margin-left: 10px;
+  font-size: 10px;
+  position: absolute;
+  bottom: 17px;
+  right: 9px;
+  color: #d3d3d3;
 }
 
-.sidebar .img4{
-    height: 25px;
+.sidebar .questionImage {
+  height: 50px;
+  width: 70px;
+  padding: 10px;
+  border: 2px dotted #d3d3d3;
+  margin-left: 10px;
 }
 
-.sidebar .rectangle{
-    height: auto;
+.sidebar .img4 {
+  height: 25px;
 }
 
-.sidebar .rectangle-image{
-    height: 30px;
+.sidebar .rectangle {
+  height: auto;
 }
 
-.sidebar .add-button{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 10px;
+.sidebar .rectangle-image {
+  height: 30px;
 }
+
+.sidebar .add-button {
+  z-index: 999;
+  bottom: 20px;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+
+
 
 /* Mainbody */
 
