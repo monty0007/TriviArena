@@ -10,6 +10,7 @@ import { ToastContainer } from 'react-toastify'
 import Dashboard from './components/Dashboard/Dashboard'
 import { auth } from './components/Firebase/Firebase'
 import 'react-toastify/dist/ReactToastify.css'
+import Host from './components/Host/Host'
 
 function App() {
   const [user, setUser] = useState()
@@ -44,6 +45,10 @@ function App() {
     {
       path: '/dashboard',
       element: <Dashboard />,
+    },
+    {
+      path: '/host',
+      element: <Host />,
     }
   ]
 

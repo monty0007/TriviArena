@@ -1,0 +1,44 @@
+.code{
+    height: 35vh;
+    background-color: #25076b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: black;
+}
+
+.wrap{
+    border: 2px solid white;
+    /* margin: 50px 200px; */
+    background-color: white;
+}
+
+.players{
+    height: 65vh;
+    background-color: #46178f;
+}
+
+.pin{
+    display: flex;
+}
+
+.pincode{
+    font-size: 70px;
+}
+
+.players{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.player-list{
+    background-color: #28282B;
+    color: white;
+    font-size: 40px;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}

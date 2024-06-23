@@ -1,16 +1,14 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import React, { useContext, useState } from "react";
+import React, { suseState } from "react";
 import { auth, db } from "../Firebase/Firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './loginRegister.css';
 import {createUser} from '../Api/Api'
-import { AccountContext } from "../context/AccountProvider";
 
 
 function Register() {
-  const { setAccount } = useContext(AccountContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fname, setFname] = useState("");
@@ -21,7 +19,7 @@ function Register() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
-      setAccount(user)
+      // setAccount(user)
       console.log(user);
       // if (user) {
       //   await setDoc(doc(db, "Users", user.uid), {

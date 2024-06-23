@@ -5,10 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../Create/Navbar'
 import './Dashboard.css'
 import { getUser } from '../Api/Api'
-import { AccountContext } from '../context/AccountProvider'
 
 function Dashboard() {
-  const { account } = useContext(AccountContext);
   const [userDetails, setUserDetails] = useState(null)
   const navigate = useNavigate()
 

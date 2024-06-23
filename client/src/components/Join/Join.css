@@ -2,6 +2,26 @@
     color: white;
 } */
 
+* {
+    box-sizing: border-box; /* Apply box-sizing to all elements */
+}
+
+.main-join{
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+    background-color: #1B1B1B;
+    height: 100vh;
+    color: white;
+    text-align: center;
+}
+
+ul{
+    list-style: none;
+    
+}
+
 .box{
     /* border: 2px solid white; */
     padding: 20px;
@@ -32,4 +52,71 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
   margin: 0; 
+}
+
+.pin{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.quiz-div{
+    font-size: 50px;
+}
+
+.quiz-join{
+    margin-top: 80px;
+}
+
+.quiz-join h1{
+    font-size: 70px;
+}
+
+.time{
+    font-size: 15px;
+}
+
+.question-text{
+    font-size: 35px;
+}
+
+.options{
+    border: 1px solid rgb(230, 230, 79);
+    cursor: pointer;
+    color: white;
+    background-color: #1B1B1B;
+    font-size: 25px;
+    padding: 5px 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 1000px;
+    margin: 20px;
+}
+
+.options:hover{
+    background-color: rgb(230, 230, 79);
+    color: black;
+}
+
+.winner{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 80px;
+    font-family: inherit;
+}
+
+.winner-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.winner-div img{
+    height: 100px;
 }
