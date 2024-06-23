@@ -1,6 +1,6 @@
 const game = require('./game')
 
-export default class GameManager{
+class GameManager{
     constructor(){
         this.games = []
         this.users = []
@@ -72,3 +72,5 @@ export default class GameManager{
     }
 
 }
+
+module.exports=GameManager

@@ -1,4 +1,4 @@
-export default class Game{
+class Game{
     constructor(player, gameId){
        this.GameId = gameId
        this.Host = player
@@ -30,3 +30,5 @@ export default class Game{
         //todo : all room handling logic
     }
 }
+
+module.exports=Game
