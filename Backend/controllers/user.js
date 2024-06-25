@@ -2,8 +2,9 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 
 const createUser = async (req, res) => {
-  const {firstName, lastName, mail } = req.body;
+  const {uid, firstName, lastName, mail } = req.body;
   const user = new User({
+    uid,
     firstName,
     lastName,
     mail,

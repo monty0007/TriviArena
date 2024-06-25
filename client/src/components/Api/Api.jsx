@@ -59,10 +59,45 @@ export const deleteUser = (id) =>
     headers: getAuthHeader(),
   }).then(handleResponse);
 
-export const fetchQuizes = () =>
-  fetch(`${API_BASE_URL}/quizes`, { headers: getAuthHeader() }).then(handleResponse);
+  export const createQuiz = async (newQuiz) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/quizes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        body: JSON.stringify(newQuiz),
+      });
+      return await response.json();
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  };
+  
+
+  // export const fetchQuizes = async (quizData) => {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/quizes`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify(quizData),
+  //     });
+  
+  //     if (!response.ok) {
+  //       throw new Error('Failed to save quiz data');
+  //     }
+  
+  //     return await response.json();
+  //   } catch (error) {
+  //     console.error('Error saving quiz data:', error);
+  //     return null;
+  //   }
+  // }
+  // fetch(`${API_BASE_URL}/`, { headers: getAuthHeader() }).then(handleResponse);
 
 export const fetchPublicQuizes = (page) =>
+
   fetch(`${API_BASE_URL}/quizes/public?page=${page}`, { headers: getAuthHeader() }).then(handleResponse);
 
 export const fetchQuizesBySearch = (searchQuery) =>
@@ -73,13 +108,6 @@ export const fetchTeacherQuizes = (teacherId) =>
 
 export const fetchQuestions = (quizId) =>
   fetch(`${API_BASE_URL}/quizes/${quizId}`, { headers: getAuthHeader() }).then(handleResponse);
-
-export const createQuiz = (newQuiz) =>
-  fetch(`${API_BASE_URL}/quizes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    body: JSON.stringify(newQuiz),
-  }).then(handleResponse);
 
 export const createQuestion = (quizId, newQuestion) =>
   fetch(`${API_BASE_URL}/quizes/${quizId}/questions`, {

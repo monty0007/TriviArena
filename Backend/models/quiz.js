@@ -2,26 +2,26 @@ const mongoose = require("mongoose")
 
 const quizSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  description: { type: String },
-  backgroundImage: { type: String },
+  // description: { type: String },s
+  // backgroundImage: { type: String },
   creatorId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "User",
   },
   creatorName: { type: String },
-  pointsPerQuestion: {
-    type: Number,
-    min: 1,
-  },
+  // pointsPerQuestion: {
+  //   type: Number,
+  //   min: 1,
+  // },
   numberOfQuestions: {
     type: Number,
     default: 0,
   },
-  isPublic: { type: Boolean, required: true, default: true },
-  tags: [String],
-  likesCount: { type: [String], default: [] },
-  comments: { type: [String], default: [] },
-  dateCreated: { type: Date, default: new Date() },
+  // isPublic: { type: Boolean, required: true, default: true },
+  // tags: [String],
+  // likesCount: { type: [String], default: [] },
+  // comments: { type: [String], default: [] },
+  // dateCreated: { type: Date, default: new Date() },
   questionList: [
     {
       questionType: {
@@ -42,8 +42,8 @@ const quizSchema = new mongoose.Schema({
       },
       backgroundImage: { type: String },
       question: {
-        type: String,
-        required: true,
+        type: String
+        // required: true,
       },
       answerList: [
         {
@@ -55,6 +55,6 @@ const quizSchema = new mongoose.Schema({
       questionIndex: { type: Number, required: true },
     },
   ],
-})
+}, { timestamps: true })
 
 module.exports = mongoose.model("Quiz", quizSchema)

@@ -5,21 +5,21 @@ const Quiz = require('../models/quiz');
 const createQuiz = async (req, res) => {
     const { name, backgroundImage, description, creatorName, creatorId, pointsPerQuestion, isPublic, tags, likesCount, questionList } = req.body;
 
-    if (!creatorId) {
-        return res.status(400).json({ message: 'Creator ID is required' });
-    }
+    // if (!creatorId) {
+        // return res.status(400).json({ message: 'Creator ID is required' });
+    // }
 
     const quiz = new Quiz({
         name,
-        backgroundImage,
-        description,
+        // backgroundImage,
+        // description,
         creatorId,
         creatorName,
-        pointsPerQuestion,
+        // pointsPerQuestion,
         numberOfQuestions: questionList.length,
-        isPublic,
+        // isPublic,
         questionList,
-        dateCreated: new Date().toISOString(),
+        // dateCreated: new Date().toISOString(),
     });
 
     try {

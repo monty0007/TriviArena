@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import React, { suseState } from "react";
+import React, { useState } from "react";
 import { auth, db } from "../Firebase/Firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { toast } from 'react-toastify';
@@ -30,7 +30,7 @@ function Register() {
       // }
       if(user){
         const userData = {
-          // uid: user.uid,
+          uid: user.uid,
           mail: user.email,
           firstName: fname,
           lastName: lname,

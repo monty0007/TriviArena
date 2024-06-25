@@ -8,7 +8,7 @@ function Mainpage() {
       <div className="container">
         <div className='title'>
             <img className='img1' src="loading-xrc.png" alt="" />
-            <h1>XrCentral</h1>
+            <h1>XRCentral</h1>
         </div>
         <div className="button">
           <Link to={'/login'}>

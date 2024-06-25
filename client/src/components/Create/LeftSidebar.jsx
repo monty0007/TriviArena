@@ -8,6 +8,8 @@ function LeftSidebar() {
     displayQuestion,
     setDisplayQuestion,
     headingQuestion,
+    quiz,
+    setQuiz
   } = useContext(Question)
   const [selectedQuestionId, setSelectedQuestionId] = useState(null) // Add state for selected question
 
@@ -26,11 +28,25 @@ function LeftSidebar() {
     }
 
     setMainQuestion((prevQuestions) => [...prevQuestions, newQuestion])
+    setQuiz((prev)=>({
+      ...prev,
+      numberOfQuestions:(mainQuestion.length+1)}))
+    console.log(quiz);
   }
 
   const handleSlide = (q) => {
     setDisplayQuestion(q)
     setSelectedQuestionId(q.id) // Update selected question ID
+  }
+
+  const handleQuizName=(e)=>{
+    e.preventDefault()
+    const quizName = e.target.value
+    setQuiz({ name: quizName })
+    // console.log(quiz);
+     
+    // console.log(setQuiz);
+    // setQuiz(name:e.target.name)
   }
 
   useEffect(() => {
@@ -39,6 +55,7 @@ function LeftSidebar() {
 
   return (
     <div className="sidebar">
+      <input type="text" placeholder='Quiz Name'  onChange={handleQuizName}/>
       {mainQuestion.map((q, i) => (
         <div
           key={i}

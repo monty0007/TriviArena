@@ -33,6 +33,33 @@ export default function QuestionContext(props) {
   })
   const [room, setRoom] = useState('')
   
+  const [quiz, setQuiz] = useState({
+    name:'',
+    creatorId:'',
+    numberOfQuestions:0,
+    isPublic:false,
+    dateCreated:'',
+    questionList:[
+      {
+      questionType:'',
+      pointType:'',
+      answerTime:0,
+      backgroundImage:'',
+      question:'',
+      //update answerlist in backend
+  answerList:[
+    {
+      name:'',
+      body:'',
+      isCorrect:false
+    }
+  ],
+      questionIndex:0
+    }
+  ],
+  
+  })
+
   return (
     <Question.Provider
       value={{
@@ -45,7 +72,9 @@ export default function QuestionContext(props) {
         displayQuestion,
         setDisplayQuestion,
         room,
-         setRoom
+        setRoom,
+        quiz,
+        setQuiz
       }}
     >
       {props.children}

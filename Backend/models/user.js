@@ -6,6 +6,10 @@ const userSchema = new mongoose.Schema({
     //     enum:["Student","Teacher"],// isse bss hum student aur teachers ki hi value ko use kr payenge
     //     required:true,
     // },
+    uid:{
+        type:String,
+        required:true,
+    },
     firstName:{
         type:String,
         required:true,
