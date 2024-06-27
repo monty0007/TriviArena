@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 
 const quizSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, unique: true },
   // description: { type: String },s
   // backgroundImage: { type: String },
   creatorId: {
@@ -17,6 +17,25 @@ const quizSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  questionType: {
+    type: String,
+    enum: ["True/False", "Quiz"],
+    //timeline, grupowanie, kolejność
+    required: true,
+  },
+  pointType: {
+    type: String,
+    enum: ["Standard", "Double", "BasedOnTime"],
+    required: true,
+  },
+  answerTime: {
+    type: Number,
+    min: 5,
+    max: 90,
+  },
+  id:{
+    type: String
+  },
   // isPublic: { type: Boolean, required: true, default: true },
   // tags: [String],
   // likesCount: { type: [String], default: [] },
@@ -24,22 +43,6 @@ const quizSchema = new mongoose.Schema({
   // dateCreated: { type: Date, default: new Date() },
   questionList: [
     {
-      questionType: {
-        type: String,
-        enum: ["True/False", "Quiz"],
-        //timeline, grupowanie, kolejność
-        required: true,
-      },
-      pointType: {
-        type: String,
-        enum: ["Standard", "Double", "BasedOnTime"],
-        required: true,
-      },
-      answerTime: {
-        type: Number,
-        min: 5,
-        max: 90,
-      },
       backgroundImage: { type: String },
       question: {
         type: String

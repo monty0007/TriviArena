@@ -3,7 +3,13 @@ const Quiz = require('../models/quiz');
 
 // Create a new quiz
 const createQuiz = async (req, res) => {
-    const { name, backgroundImage, description, creatorName, creatorId, pointsPerQuestion, isPublic, tags, likesCount, questionList } = req.body;
+    const { name, backgroundImage, description, creatorName, creatorId, pointsPerQuestion, isPublic, tags, likesCount, questionList,  questionType,
+        pointType,
+        answerTime,
+        numberOfQuestions, 
+        id
+        // isPublic,
+     } = req.body;
 
     // if (!creatorId) {
         // return res.status(400).json({ message: 'Creator ID is required' });
@@ -16,8 +22,13 @@ const createQuiz = async (req, res) => {
         creatorId,
         creatorName,
         // pointsPerQuestion,
-        numberOfQuestions: questionList.length,
+        // numberOfQuestions: questionList.length,
+        numberOfQuestions,
+        questionType,
+        pointType,
+        answerTime,
         // isPublic,
+        id,
         questionList,
         // dateCreated: new Date().toISOString(),
     });
@@ -105,22 +116,16 @@ const deleteQuiz = async (req, res) => {
 // Update a quiz by ID
 const updateQuiz = async (req, res) => {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).send(`No quiz found with id: ${id}`);
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //     return res.status(404).send(`No quiz found with id: ${id}`);
+    // }
 
-    const { name, backgroundImage, description, pointsPerQuestion, isPublic, tags, questionList } = req.body;
+    const { name, backgroundImage, description, pointsPerQuestion, isPublic, tags, numberOfQuestions, questionList } = req.body;
 
     const quiz = {
         name,
-        backgroundImage,
-        description,
-        pointsPerQuestion,
-        numberOfQuestions: questionList.length,
-        isPublic,
-        tags,
+        numberOfQuestions,
         questionList,
-        dateCreated: new Date().toISOString(),
     };
 
     try {

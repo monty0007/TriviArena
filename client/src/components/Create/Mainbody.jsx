@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Question } from '../../context/QuestionContext';
-// import { fetchQuizes } from '../Api/Api'; // Adjust the path as per your file structure
+import { createQuiz, updateQuiz } from '../Api/Api';
+import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 from uuid package
 
 function Mainbody() {
   const [uploading, setUploading] = useState(false);
@@ -11,70 +12,119 @@ function Mainbody() {
     option3: '',
     option4: '',
   });
+  const [correctOption, setCorrectOption] = useState('');
 
-  const { mainQuestion, setHeadingQuestion, setMainQuestion, displayQuestion, setDisplayQuestion, quiz, setQuiz } = useContext(Question);
+  const {
+    mainQuestion,
+    setHeadingQuestion,
+    setMainQuestion,
+    displayQuestion,
+    setDisplayQuestion,
+    quiz,
+    setQuiz,
+    id,
+  } = useContext(Question);
+
+  useEffect(() => {
+    if (!displayQuestion) {
+      setDisplayQuestion({
+        question: '',
+        answerList: [
+          { name: 'option1', body: '', isCorrect: false },
+          { name: 'option2', body: '', isCorrect: false },
+          { name: 'option3', body: '', isCorrect: false },
+          { name: 'option4', body: '', isCorrect: false },
+        ],
+        questionIndex: mainQuestion.length,
+      });
+    }
+  }, [displayQuestion, mainQuestion]);
 
   function handleInputQuestion(e) {
     const newQuestion = e.target.value;
     setQues(newQuestion);
-    setDisplayQuestion(prev => ({
+    setDisplayQuestion((prev) => ({
       ...prev,
-      question: newQuestion
+      question: newQuestion,
     }));
     setHeadingQuestion(newQuestion);
   }
 
   function handleOptions(e) {
     const { name, value } = e.target;
-    setOptions(prev => ({
+    setOptions((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    setDisplayQuestion(prev => ({
+    setDisplayQuestion((prev) => ({
       ...prev,
-      options: {
-        ...prev.options,
-        [name]: value
-      }
+      answerList: prev.answerList.map((option) => {
+        if (option.name === name) {
+          return { ...option, body: value, isCorrect: correctOption === name };
+        }
+        return option;
+      }),
     }));
   }
+
+  function handleRadio(e) {
+    const { name } = e.target;
+    setCorrectOption(name);
+    setDisplayQuestion((prev) => ({
+      ...prev,
+      answerList: prev.answerList.map((option) => {
+        if (option.name === name) {
+          return { ...option, isCorrect: true };
+        }
+        return { ...option, isCorrect: false };
+      }),
+    }));
+  }
+
+  useEffect(() => {
+    console.log('quiz:', quiz);
+  }, [displayQuestion, mainQuestion, quiz]);
 
   async function handleSaveQuestion() {
-    const answerList = Object.keys(options).map(key => ({
-      name: key,
-      body: options[key],
-      isCorrect: false // Update this based on your logic
-    }));
-    const updatedDisplayQuestion = {
-      ...displayQuestion,
-      answerList: answerList
-    };
-    const updatedQuestions = mainQuestion.map(question =>
-      question.id === displayQuestion.id ? updatedDisplayQuestion : question
+    const updatedQuestions = mainQuestion.map((question) =>
+      question.questionIndex === displayQuestion.questionIndex ? displayQuestion : question
     );
+  
+    setMainQuestion(updatedQuestions);
+  
+    // Generate a new ID if it doesn't exist (for new quiz creation)
+    const newQuizId = quiz.id || uuidv4();
+  
+    // Create an updated quiz object
     const updatedQuiz = {
       ...quiz,
-      questionList: quiz.questionList.map(question =>
-        question.id === displayQuestion.id ? { ...question, answerList: answerList } : question
-      )
+      id: newQuizId,
+      questionList: updatedQuestions,
+      numberOfQuestions: updatedQuestions.length,
     };
-
-    setMainQuestion(updatedQuestions);
+  
     setQuiz(updatedQuiz);
-
-    // try {
-    //   const response = await createQuiz(updatedQuiz);
-    //   console.log('Quiz data saved successfully:', response);
-    // } catch (error) {
-    //   console.error('Error saving quiz data:', error);
-    // }
+  
+    try {
+      // If id exists, update the quiz; otherwise, create a new quiz
+      if (quiz.id) {
+        console.log("Updating quiz with id: ", quiz.id);
+        await updateQuiz(quiz.id, updatedQuiz);
+      } else {
+        console.log("Creating new quiz");
+        await createQuiz(updatedQuiz);
+      }
+      console.log('Data sent successfully');
+    } catch (error) {
+      console.error('Error saving quiz:', error);
+    }
   }
-
+  
   return (
     <div className="mainbody">
       <div className="main-bodyinput">
         <input
-          onChange={e => handleInputQuestion(e)}
+          onChange={(e) => handleInputQuestion(e)}
           value={displayQuestion.question}
           className="mainbody-input"
           type="text"
@@ -84,7 +134,9 @@ function Mainbody() {
           Find and insert media
           <p>
             <input type="file" />
-            <button disabled={uploading}>{uploading ? 'Uploading' : 'Upload Image'}</button>
+            <button disabled={uploading}>
+              {uploading ? 'Uploading' : 'Upload Image'}
+            </button>
             <button onClick={handleSaveQuestion}>Save Question</button>
           </p>
         </div>
@@ -92,7 +144,7 @@ function Mainbody() {
       <div className="answer">
         <div className="answer-1">
           <input
-            onChange={e => handleOptions(e)}
+            onChange={(e) => handleOptions(e)}
             name="option1"
             value={options.option1}
             className="answer-input-1"
@@ -100,17 +152,35 @@ function Mainbody() {
             placeholder="Add Answer 1"
           />
           <input
-            onChange={e => handleOptions(e)}
+            type="radio"
+            name="option1"
+            id="option1"
+            checked={correctOption === 'option1'}
+            onChange={handleRadio}
+            className="custom-radio"
+          />
+          <label htmlFor="option1"></label>
+          <input
+            onChange={(e) => handleOptions(e)}
             name="option2"
             value={options.option2}
             className="answer-input-3"
             type="text"
             placeholder="Add Answer 2"
           />
+          <input
+            type="radio"
+            name="option2"
+            id="option2"
+            checked={correctOption === 'option2'}
+            onChange={handleRadio}
+            className="custom-radio"
+          />
+          <label htmlFor="option2"></label>
         </div>
         <div className="answer-2">
           <input
-            onChange={e => handleOptions(e)}
+            onChange={(e) => handleOptions(e)}
             name="option3"
             value={options.option3}
             className="answer-input-2"
@@ -118,13 +188,31 @@ function Mainbody() {
             placeholder="Add Answer 3"
           />
           <input
-            onChange={e => handleOptions(e)}
+            type="radio"
+            name="option3"
+            id="option3"
+            checked={correctOption === 'option3'}
+            onChange={handleRadio}
+            className="custom-radio"
+          />
+          <label htmlFor="option3"></label>
+          <input
+            onChange={(e) => handleOptions(e)}
             name="option4"
             value={options.option4}
             className="answer-input-4"
             type="text"
             placeholder="Add Answer 4"
           />
+          <input
+            type="radio"
+            name="option4"
+            id="option4"
+            checked={correctOption === 'option4'}
+            onChange={handleRadio}
+            className="custom-radio"
+          />
+          <label htmlFor="option4"></label>
         </div>
       </div>
     </div>

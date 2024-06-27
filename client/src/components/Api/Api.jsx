@@ -63,15 +63,52 @@ export const deleteUser = (id) =>
     try {
       const response = await fetch(`${API_BASE_URL}/quizes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newQuiz),
       });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create quiz");
+      }
+  
       return await response.json();
     } catch (err) {
-      console.log(err);
+      console.log("Error creating quiz:", err);
       return null;
     }
   };
+
+
+  //Update quizyy
+  
+  // export const updateQuiz = (id, updatedQuiz) =>
+  // fetch(`${API_BASE_URL}/quizes/${id}`, {
+  //   method: "PATCH",
+  //   headers: { "Content-Type": "application/json", ...getAuthHeader() },
+  //   body: JSON.stringify(updatedQuiz),
+  // }).then(handleResponse);
+  
+  export const updateQuiz = async (id, updatedQuiz) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedQuiz),
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update quiz");
+      }
+  
+      return await response.json();
+    } catch (err) {
+      console.log("Error updating quiz:", err);
+      return null;
+    }
+  };
+  
   
 
   // export const fetchQuizes = async (quizData) => {
@@ -123,12 +160,7 @@ export const updateQuestion = (quizId, questionId, updatedQuestion) =>
     body: JSON.stringify(updatedQuestion),
   }).then(handleResponse);
 
-export const updateQuiz = (id, updatedQuiz) =>
-  fetch(`${API_BASE_URL}/quizes/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    body: JSON.stringify(updatedQuiz),
-  }).then(handleResponse);
+
 
 export const deleteQuiz = (id) =>
   fetch(`${API_BASE_URL}/quizes/${id}`, {

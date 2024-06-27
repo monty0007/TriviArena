@@ -102,8 +102,11 @@ function Host() {
         {question && (
           <div className="question">
             <h2>{question}</h2>
+            <div className="time">
             <IoMdTime />
-            <p>Time remaining: {seconds}</p>
+            Time remaining: {seconds}
+
+            </div>
             <ul>
               {options.map((answer, index) => (
                 <li key={index}>

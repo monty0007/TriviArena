@@ -9,65 +9,85 @@ function LeftSidebar() {
     setDisplayQuestion,
     headingQuestion,
     quiz,
-    setQuiz
+    setQuiz,
   } = useContext(Question)
   const [selectedQuestionId, setSelectedQuestionId] = useState(null) // Add state for selected question
-
+  const [qIndex, setQIndex] = useState(1)
   const addQuestion = () => {
-    const id = 100000 + Math.floor(Math.random() * 900000)
+    // const id = 100000 + Math.floor(Math.random() * 900000)
     const newQuestion = {
-      id: id.toString(),
+      questionIndex: qIndex,
+      backgroundImage: '',
       question: '',
-      image: '',
-      options: {
-        option1: '',
-        option2: '',
-        option3: '',
-        option4: '',
-      },
+      answerList: [
+        {
+          name: 'option1',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option2',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option3',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option4',
+          body: '',
+          isCorrect: false,
+        },
+      ],
     }
 
+    setQIndex(qIndex+1)
     setMainQuestion((prevQuestions) => [...prevQuestions, newQuestion])
-    setQuiz((prev)=>({
+    setQuiz((prev) => ({
       ...prev,
-      numberOfQuestions:(mainQuestion.length+1)}))
-    console.log(quiz);
+      numberOfQuestions: mainQuestion.length + 1,
+    }))
+    console.log(quiz)
   }
 
   const handleSlide = (q) => {
     setDisplayQuestion(q)
-    setSelectedQuestionId(q.id) // Update selected question ID
+    setSelectedQuestionId(q.questionIndex) // Update selected question ID
   }
 
-  const handleQuizName=(e)=>{
+  const handleQuizName = (e) => {
     e.preventDefault()
     const quizName = e.target.value
     setQuiz({ name: quizName })
     // console.log(quiz);
-     
+
     // console.log(setQuiz);
     // setQuiz(name:e.target.name)
   }
 
   useEffect(() => {
-    console.log('slide : ', displayQuestion)
+    // console.log('slide : ', displayQuestion)
   }, [displayQuestion])
 
   return (
     <div className="sidebar">
-      <input type="text" placeholder='Quiz Name'  onChange={handleQuizName}/>
+      <input type="text" placeholder="Quiz Name" onChange={handleQuizName} />
       {mainQuestion.map((q, i) => (
         <div
           key={i}
           onClick={() => {
             handleSlide(q)
           }}
-          className={`quiz ${q.id === selectedQuestionId ? 'selected' : ''}`} // Conditionally apply class
+          className={`quiz ${q.questionIndex === selectedQuestionId ? 'selected' : ''}`} // Conditionally apply class
         >
           <div className="quiz">
             <p className="quiz-p">{`Quiz ${i + 1}`}</p>
             <div className="question">
-              <p className="question-p">{headingQuestion || 'Question'}</p>{' '}
+              <p className="question-p">{'Question'}</p>{' '}
+              {/* Update headingQuestion later */}
+              {/* <p className="question-p">{headingQuestion || 'Question'}</p>{' '} */}
               {/* Display headingQuestion of each question */}
               <div className="timer-image">
                 <div className="timer">

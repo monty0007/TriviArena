@@ -11,9 +11,9 @@
     flex-direction: column; 
     justify-content: center;
     align-items: center;
-    background-color: #1B1B1B;
+    background-color: white;
     height: 100vh;
-    color: white;
+    color: black;
     text-align: center;
 }
 
@@ -48,6 +48,10 @@ ul{
     /* color: black; */
 }
 
+.room-id{
+    font-weight: bold;
+}
+
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
@@ -74,6 +78,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 .time{
     font-size: 15px;
+    font-weight: bold;
 }
 
 .question-text{
@@ -81,10 +86,10 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .options{
-    border: 1px solid rgb(230, 230, 79);
+    border: 1px solid #E1DCF3;
     cursor: pointer;
-    color: white;
-    background-color: #1B1B1B;
+    color: black;
+    background-color: #E1DCF3;
     font-size: 25px;
     padding: 5px 200px;
     display: flex;
@@ -93,10 +98,11 @@ input[type=number]::-webkit-outer-spin-button {
     text-align: center;
     width: 1000px;
     margin: 20px;
+    border-radius: 5px;
 }
 
 .options:hover{
-    background-color: rgb(230, 230, 79);
+    background-color: #8a56d7;
     color: black;
 }
 
@@ -120,3 +126,6 @@ input[type=number]::-webkit-outer-spin-button {
 .winner-div img{
     height: 100px;
 }
+
+
+  

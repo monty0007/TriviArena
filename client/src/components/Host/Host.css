@@ -114,3 +114,22 @@
     justify-content: center;
     align-items: center;
   }
+
+  .host.question-active options{
+    border: 1px solid rgb(230, 230, 79);
+    cursor: pointer;
+    /* color: white; */
+    background-color: #1B1B1B;
+    font-size: 25px;
+    padding: 5px 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 1000px;
+    margin: 20px;
+  }
+  
+  .host.question-active .players{
+    height: 100vh;
+  }
