@@ -1,78 +1,110 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { auth, db } from '../Firebase/Firebase'
-import { getDoc, doc } from 'firebase/firestore'
-import { useNavigate } from 'react-router-dom'
-import Navbar from '../Create/Navbar'
-import './Dashboard.css'
-import { getUser } from '../Api/Api'
+import React, { useContext, useEffect, useState } from 'react';
+import { auth } from '../Firebase/Firebase';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../Create/Navbar';
+import './Dashboard.css';
+import { fetchTeacherQuizes, fetchQuiz } from '../Api/Api';
+import { Question } from '../../context/QuestionContext';
 
 function Dashboard() {
-  const [userDetails, setUserDetails] = useState(null)
-  const navigate = useNavigate()
+  const user=auth.currentUser;
+  const [userDetails, setUserDetails] = useState(null);
+  const [quizzes, setQuizzes] = useState([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const navigate = useNavigate();
+
+  const {
+    quiz,
+    setQuiz
+  } = useContext(Question);
 
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
-      
-      console.log(user)
-      setUserDetails(user)
-      // const docRef = doc(db, 'Users', user.uid)
-      // const docSnap = await getDoc(docRef)
-      // if (docSnap.exists()) {
-        // setUserDetails(docSnap.data())
-        // console.log(docSnap.data())
-      //   const dataRecieved=  await getUser(account._id); 
-      //   if(dataRecieved.exist()){
-      //     setUserDetails(dataRecieved.data())
-      // } else {
-      //   console.log('User is not logged in')
-      //   // handleLogout()
-      //   // navigate('/login')
-      // }
-    })
-  }
+      if (user) {
+        setUserDetails(user);
+        // Fetch quizzes for the user
+        const fetchedQuizzes = await fetchTeacherQuizes(user.uid);
+        setQuizzes(fetchedQuizzes);
+      }
+    });
+  };
+
   useEffect(() => {
-    fetchUserData()
-  }, [])
+    fetchUserData();
+  }, []);
+
+  const handleQuizClick = async (quizId) => {
+    const quizData = await fetchQuiz(quizId);
+    setSelectedQuiz(quizData);
+    // Optionally navigate to a quiz detail page or show details in a modal
+    // navigate(`/quiz/${quizId}`);
+  };
 
   async function handleLogout() {
     try {
-      await auth.signOut()
-      navigate('/login')
-      console.log('User logged out succesfully')
+      await auth.signOut();
+      navigate('/login');
+      console.log('User logged out successfully');
     } catch (error) {
-      console.log('Error logging out : ', error.message)
+      console.log('Error logging out: ', error.message);
     }
   }
 
   const handleCreate = async () => {
-    navigate('/create')
-  }
+
+    setQuiz((prevQuiz) => ({
+      ...prevQuiz,
+      creatorId: user.uid,
+    }));
+    navigate('/create');
+  };
+
   return (
     <div>
       <Navbar />
       <div className="dashboard">
         {userDetails ? (
           <>
-            <h3>Welcome {userDetails.firstName || userDetails.displayname} {userDetails.lastName}  🙏🙏</h3>
-            <div>
-              <p>Email: {userDetails.email}</p>
-              <p>First Name: {userDetails.firstName}</p>
-              <p>Last Name: {userDetails.lastName}</p>
-            </div>
-            <div className="dashboard-button">
-              <button className="btn btn-primary " onClick={handleCreate}>
-                Create
-              </button>
+            <div className="top-right">
               <button className="btn btn-primary" onClick={handleLogout}>
                 Logout
               </button>
             </div>
+            <div className="center">
+              <h3>
+                Welcome {userDetails.firstName || userDetails.displayName} {userDetails.lastName} 🙏🙏
+              </h3>
+              {/* Additional user details can be displayed here if needed */}
+            </div>
+            <div className="dashboard-button">
+              <img className="plus" src="plus.jpg" alt="" onClick={handleCreate} />
+            </div>
+            <div className="quiz-list">
+              {quizzes.length > 0 ? (
+                quizzes.map((quiz) => (
+                  <div key={quiz._id} className="quiz-item" onClick={() => handleQuizClick(quiz._id)}>
+                    <h4>{quiz.name}</h4>
+                    <p>{quiz.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No quizzes available.</p>
+              )}
+            </div>
+            {selectedQuiz && (
+              <div className="quiz-detail">
+                <h2>{selectedQuiz.name}</h2>
+                <p>{selectedQuiz.description}</p>
+                {/* Add more details about the selected quiz */}
+              </div>
+            )}
           </>
         ) : (
           <p>Loading...</p>
         )}
       </div>
     </div>
-  )
+  );
 }
-export default Dashboard
+
+export default Dashboard;

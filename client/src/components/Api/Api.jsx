@@ -32,6 +32,65 @@ export const createUser =async (newUser) =>
 
 }
 
+
+export const updateQuiz = async (id, updatedQuiz) => {
+  try {
+    console.log(`Sending update request for quiz with id: ${id}`);
+    console.log('Updated quiz data:', updatedQuiz);
+
+    const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedQuiz),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Failed to update quiz. Error response:', error);
+      throw new Error(error.message || "Failed to update quiz");
+    }
+
+    const data = await response.json();
+    console.log('Successfully updated quiz:', data);
+    return data;
+  } catch (err) {
+    console.error("Error updating quiz:", err);
+    return null;
+  }
+};
+
+
+export const fetchTeacherQuizes = async (teacherId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/quizes/teacher/${teacherId}`, { 
+      method: "GET",
+    });
+    
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching teacher quizzes:', error);
+    return null;
+  }
+};
+
+export const fetchQuiz = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
+      method: "GET",
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch quiz data');
+    }
+    
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching quiz data:', error);
+    return null;
+  }
+};
+
+
 export const getUser=async(id)=>{
   try{
     const data=  await fetch(`${API_BASE_URL}/users/${id}`, {
@@ -89,55 +148,29 @@ export const deleteUser = (id) =>
   //   body: JSON.stringify(updatedQuiz),
   // }).then(handleResponse);
   
-  export const updateQuiz = async (id, updatedQuiz) => {
-    try {
-      console.log(`Sending update request for quiz with id: ${id}`);
-      console.log('Updated quiz data:', updatedQuiz);
-  
-      const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedQuiz),
-      });
-  
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Failed to update quiz. Error response:', error);
-        throw new Error(error.message || "Failed to update quiz");
-      }
-  
-      const data = await response.json();
-      console.log('Successfully updated quiz:', data);
-      return data;
-    } catch (err) {
-      console.error("Error updating quiz:", err);
-      return null;
-    }
-  };
-  
   
   
 
-  // export const fetchQuizes = async (quizData) => {
-  //   try {
-  //     const response = await fetch(`${API_BASE_URL}/quizes`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json"
-  //       },
-  //       body: JSON.stringify(quizData),
-  //     });
+  export const fetchQuizes = async (quizData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/quizes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(quizData),
+      });
   
-  //     if (!response.ok) {
-  //       throw new Error('Failed to save quiz data');
-  //     }
+      if (!response.ok) {
+        throw new Error('Failed to save quiz data');
+      }
   
-  //     return await response.json();
-  //   } catch (error) {
-  //     console.error('Error saving quiz data:', error);
-  //     return null;
-  //   }
-  // }
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving quiz data:', error);
+      return null;
+    }
+  }
   // fetch(`${API_BASE_URL}/`, { headers: getAuthHeader() }).then(handleResponse);
 
 export const fetchPublicQuizes = (page) =>
@@ -147,8 +180,7 @@ export const fetchPublicQuizes = (page) =>
 export const fetchQuizesBySearch = (searchQuery) =>
   fetch(`${API_BASE_URL}/quizes/search?searchQuery=${searchQuery.search || "none"}&tags=${searchQuery.tags}`, { headers: getAuthHeader() }).then(handleResponse);
 
-export const fetchTeacherQuizes = (teacherId) =>
-  fetch(`${API_BASE_URL}/quizes/teacher/${teacherId}`, { headers: getAuthHeader() }).then(handleResponse);
+ 
 
 export const fetchQuestions = (quizId) =>
   fetch(`${API_BASE_URL}/quizes/${quizId}`, { headers: getAuthHeader() }).then(handleResponse);
@@ -175,8 +207,7 @@ export const deleteQuiz = (id) =>
     headers: getAuthHeader(),
   }).then(handleResponse);
 
-export const fetchQuiz = (id) =>
-  fetch(`${API_BASE_URL}/quizes/${id}`, { headers: getAuthHeader() }).then(handleResponse);
+
 
 export const createGame = (newGame) =>
   fetch(`${API_BASE_URL}/games`, {

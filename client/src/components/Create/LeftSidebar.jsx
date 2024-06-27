@@ -58,14 +58,14 @@ function LeftSidebar() {
   }
 
   const handleQuizName = (e) => {
-    e.preventDefault()
-    const quizName = e.target.value
-    setQuiz({ name: quizName })
-    // console.log(quiz);
-
-    // console.log(setQuiz);
-    // setQuiz(name:e.target.name)
-  }
+    e.preventDefault();
+    const quizName = e.target.value;
+    setQuiz((prevQuiz) => ({
+      ...prevQuiz,
+      name: quizName,
+    }));
+    console.log(quiz);
+  };
 
   useEffect(() => {
     // console.log('slide : ', displayQuestion)

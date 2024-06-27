@@ -1,11 +1,12 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { auth, db } from "../Firebase/Firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './loginRegister.css';
 import {createUser} from '../Api/Api'
+import { Question } from "../../context/QuestionContext";
 
 
 function Register() {
@@ -13,6 +14,11 @@ function Register() {
   const [password, setPassword] = useState("");
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
+
+  const {
+    quiz,
+    setQuiz,
+  } = useContext(Question);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -39,6 +45,12 @@ function Register() {
       const dataRecieved=  await createUser(userData);
       console.log(dataRecieved);
       }
+
+      setQuiz(prevQuiz => ({
+        ...prevQuiz,
+        creatorId: user.uid,
+      }));
+
       console.log("User Registered Successfully");
       toast.success("User Registered Successfully", {
         position: "top-center",

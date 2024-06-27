@@ -1,13 +1,19 @@
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
-import React from 'react'
+import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../Firebase/Firebase';
 import { setDoc,doc } from "firebase/firestore";
 import {createUser} from '../Api/Api'
+import { Question } from '../../context/QuestionContext';
 
 function SignInWithGoogle() {
-    
+  const {
+    quiz,
+    setQuiz,
+  } = useContext(Question);
+
   const navigate=useNavigate()
+
   function googleLogin(){
     const provider=new GoogleAuthProvider();
     signInWithPopup(auth,provider).then(async(result)=>{
@@ -21,11 +27,17 @@ function SignInWithGoogle() {
             //   })
 
               const userData = {
-                // uid: user.uid,
+                uid: user.uid,
                 mail: user.email,
                 firstName: user.displayName,
                 lastName: "",
               };
+
+              setQuiz(prevQuiz => ({
+                ...prevQuiz,
+                creatorId: user.uid,
+              }));
+
               const dataRecieved=  await createUser(userData);
               console.log(dataRecieved);
             navigate('/dashboard')

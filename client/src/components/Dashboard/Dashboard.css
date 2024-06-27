@@ -1,12 +1,48 @@
-.dashboard{
+.dashboard {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     margin-top: 150px;
-}
+  }
+  
+  .top-right {
+    position: absolute;
+    top: 70px;
+    right: 30px;
+  }
+  
+  .center {
+    text-align: center;
+  }
+  
+  .dashboard-button {
+    margin-top: 20px; /* Adjust margin as needed */
+  }
+  
+  .plus {
+    height: 200px;
+    cursor: pointer;
+  }
+  
+  .btn {
+    /* Adjust button styles */
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #0056b3;
+  }
 
-.dashboard-button button{
-    margin: 10px;
-}
+  .quiz-list{
+    border: 2px solid black;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
