@@ -15,7 +15,10 @@ function Dashboard() {
 
   const {
     quiz,
-    setQuiz
+    setQuiz,
+    setMainQuestion,
+    displayQuestion,
+    setDisplayQuestion
   } = useContext(Question);
 
   const fetchUserData = async () => {
@@ -35,7 +38,16 @@ function Dashboard() {
 
   const handleQuizClick = async (quizId) => {
     const quizData = await fetchQuiz(quizId);
-    setSelectedQuiz(quizData);
+    if(quizData){
+      setSelectedQuiz(quizData);
+      // jo main quiz hai usko is quiz ki value se replace kardo same qui ho to hai
+      setQuiz(quizData)
+      setMainQuestion(quizData.questionList)
+      setDisplayQuestion(quizData.questionList[0])
+      console.log('old : ', displayQuestion)
+      // phir jaha pe poore quiz ko modify karte hai vaha navigate karlo
+      navigate('/create')
+    }
     // Optionally navigate to a quiz detail page or show details in a modal
     // navigate(`/quiz/${quizId}`);
   };

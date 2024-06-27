@@ -13,6 +13,12 @@ function LeftSidebar() {
   } = useContext(Question)
   const [selectedQuestionId, setSelectedQuestionId] = useState(null) // Add state for selected question
   const [qIndex, setQIndex] = useState(1)
+
+  // pahli baar load hone pe check karenge agar questionlist > 1 hai kya agar ha to purane quiz ko add kar dnege aur qIndex ko uski length se aage badha denge
+  useEffect(()=>{
+    console.log(mainQuestion)
+  }, [mainQuestion])
+
   const addQuestion = () => {
     // const id = 100000 + Math.floor(Math.random() * 900000)
     const newQuestion = {
@@ -49,7 +55,7 @@ function LeftSidebar() {
       ...prev,
       numberOfQuestions: mainQuestion.length + 1,
     }))
-    console.log(quiz)
+    // console.log(quiz)
   }
 
   const handleSlide = (q) => {
@@ -64,7 +70,7 @@ function LeftSidebar() {
       ...prevQuiz,
       name: quizName,
     }));
-    console.log(quiz);
+    // console.log(quiz);
   };
 
   useEffect(() => {

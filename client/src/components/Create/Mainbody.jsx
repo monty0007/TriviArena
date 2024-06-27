@@ -78,12 +78,22 @@ function Mainbody() {
         }
         return { ...option, isCorrect: false };
       }),
-    }));
+    }))
   }
 
   useEffect(() => {
     console.log('quiz:', quiz);
+    displayQuestion.answerList.map((opt)=>{
+      if(opt.isCorrect === true ){
+        setCorrectOption(opt.name)
+        return
+      }
+    }) 
   }, [displayQuestion, mainQuestion, quiz]);
+  
+  useEffect(()=>{
+     //re render at correctoption change
+  }, [correctOption])
 
   async function handleSaveQuestion() {
     const updatedQuestions = mainQuestion.map((question) =>
@@ -147,7 +157,8 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option1"
-            value={options.option1}
+            // value={options.option1}
+            value={displayQuestion.answerList[0].body}
             className="answer-input-1"
             type="text"
             placeholder="Add Answer 1"
@@ -164,7 +175,8 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option2"
-            value={options.option2}
+            // value={options.option2}
+            value={displayQuestion.answerList[1].body}
             className="answer-input-3"
             type="text"
             placeholder="Add Answer 2"
@@ -183,7 +195,8 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option3"
-            value={options.option3}
+            // value={options.option3}
+            value={displayQuestion.answerList[2].body}
             className="answer-input-2"
             type="text"
             placeholder="Add Answer 3"
@@ -200,7 +213,8 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option4"
-            value={options.option4}
+            // value={options.option4}
+            value={displayQuestion.answerList[3].body}
             className="answer-input-4"
             type="text"
             placeholder="Add Answer 4"
