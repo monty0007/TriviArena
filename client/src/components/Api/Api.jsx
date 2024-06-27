@@ -91,6 +91,9 @@ export const deleteUser = (id) =>
   
   export const updateQuiz = async (id, updatedQuiz) => {
     try {
+      console.log(`Sending update request for quiz with id: ${id}`);
+      console.log('Updated quiz data:', updatedQuiz);
+  
       const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -99,15 +102,19 @@ export const deleteUser = (id) =>
   
       if (!response.ok) {
         const error = await response.json();
+        console.error('Failed to update quiz. Error response:', error);
         throw new Error(error.message || "Failed to update quiz");
       }
   
-      return await response.json();
+      const data = await response.json();
+      console.log('Successfully updated quiz:', data);
+      return data;
     } catch (err) {
-      console.log("Error updating quiz:", err);
+      console.error("Error updating quiz:", err);
       return null;
     }
   };
+  
   
   
 

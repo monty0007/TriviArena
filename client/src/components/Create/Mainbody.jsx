@@ -93,12 +93,13 @@ function Mainbody() {
     setMainQuestion(updatedQuestions);
   
     // Generate a new ID if it doesn't exist (for new quiz creation)
-    const newQuizId = quiz.id || uuidv4();
+    const newQuizId = quiz._id || uuidv4();
+    console.log(newQuizId);
   
     // Create an updated quiz object
     const updatedQuiz = {
       ...quiz,
-      id: newQuizId,
+      _id: newQuizId,
       questionList: updatedQuestions,
       numberOfQuestions: updatedQuestions.length,
     };
@@ -107,9 +108,9 @@ function Mainbody() {
   
     try {
       // If id exists, update the quiz; otherwise, create a new quiz
-      if (quiz.id) {
-        console.log("Updating quiz with id: ", quiz.id);
-        await updateQuiz(quiz.id, updatedQuiz);
+      if (quiz._id) {
+        console.log("Updating quiz with id: ", quiz._id);
+        await updateQuiz(quiz._id, updatedQuiz);
       } else {
         console.log("Creating new quiz");
         await createQuiz(updatedQuiz);

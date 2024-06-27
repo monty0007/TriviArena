@@ -7,7 +7,7 @@ const createQuiz = async (req, res) => {
         pointType,
         answerTime,
         numberOfQuestions, 
-        id
+        _id
         // isPublic,
      } = req.body;
 
@@ -28,7 +28,7 @@ const createQuiz = async (req, res) => {
         pointType,
         answerTime,
         // isPublic,
-        id,
+        _id,
         questionList,
         // dateCreated: new Date().toISOString(),
     });
@@ -123,6 +123,7 @@ const updateQuiz = async (req, res) => {
     const { name, backgroundImage, description, pointsPerQuestion, isPublic, tags, numberOfQuestions, questionList } = req.body;
 
     const quiz = {
+        _id: id,
         name,
         numberOfQuestions,
         questionList,
@@ -130,6 +131,9 @@ const updateQuiz = async (req, res) => {
 
     try {
         const updatedQuiz = await Quiz.findByIdAndUpdate(id, quiz, { new: true });
+        if (!updatedQuiz) {
+            return res.status(404).json({ message: `No quiz found with id: ${id}` });
+          }
         res.json(updatedQuiz);
     } catch (error) {
         res.status(400).json({ message: error.message });
