@@ -34,7 +34,7 @@ function RightSidebar() {
         <img src="questionType.svg" alt="" />
         <h5>Question type</h5>
       </div>
-      <select name="questionType" value={quesType} onChange={handlePoints}>
+      <select name="questionType" value={quiz.questionType} onChange={handlePoints}>
         <option>---</option>
         <option value="Quiz">Quiz</option>
       </select>
@@ -42,7 +42,7 @@ function RightSidebar() {
         <img src="timer.svg" alt="" />
         <h5>Time limit</h5>
       </div>
-      <select name="answerTime" value={answerTime} onChange={handlePoints}>
+      <select name="answerTime" value={quiz.answerTime} onChange={handlePoints}>
         <option>---</option>
         <option value="5">5 Seconds</option>
         <option value="10">10 Seconds</option>
@@ -54,7 +54,7 @@ function RightSidebar() {
         <img src="gamePoints.svg" alt="" />
         <h5>Points</h5>
       </div>
-      <select name="pointType" value={pType} onChange={handlePoints}>
+      <select name="pointType" value={quiz.pointType} onChange={handlePoints}>
         <option>---</option>
         <option value="Standard">Standard</option>
         {/* <option value="double">Double Points</option> */}
