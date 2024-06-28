@@ -18,99 +18,101 @@ const io = socketIo(server, {
   },
 })
 
-const questions = [
-  {
-    question: 'What is the flagship product of XR Central?',
-    answers: [
-      { text: 'MetaQube', correct: true },
-      { text: 'MetaWorld', correct: false },
-      { text: 'XRBuilder', correct: false },
-      { text: 'VRStudio', correct: false },
-    ],
-  },
-  {
-    question: 'Which industry sectors has XR Central worked with?',
-    answers: [
-      { text: 'Aviation, Automotive, and Art', correct: true },
-      { text: 'Retail, Food & Beverage, and Real Estate', correct: false },
-      { text: 'Healthcare, Education, and Finance', correct: false },
-      { text: 'Sports, Entertainment, and Tourism', correct: false },
-    ],
-  },
-  {
-    question: 'Who are the founders of XR Central?',
-    answers: [
-      { text: 'Anshul Agarwal and Shrey Mishra', correct: true },
-      { text: 'Sundar Pichai and Satya Nadella', correct: false },
-      { text: 'Elon Musk and Mark Zuckerberg', correct: false },
-      { text: 'Bill Gates and Steve Jobs', correct: false },
-    ],
-  },
-  {
-    question: 'In which city is XR Central based?',
-    answers: [
-      { text: 'Gurgaon', correct: true },
-      { text: 'Bangalore', correct: false },
-      { text: 'Mumbai', correct: false },
-      { text: 'New Delhi', correct: false },
-    ],
-  },
-  {
-    question:
-      "What percentage of XR Central's revenue comes from metaverse as a service?",
-    answers: [
-      { text: '80%', correct: true },
-      { text: '60%', correct: false },
-      { text: '50%', correct: false },
-      { text: '30%', correct: false },
-    ],
-  },
-  {
-    question: 'What type of platform is MetaQube?',
-    answers: [
-      { text: 'No-code platform', correct: true },
-      { text: 'Low-code platform', correct: false },
-      { text: 'Full-code platform', correct: false },
-      { text: 'Hybrid-code platform', correct: false },
-    ],
-  },
-  {
-    question: 'During which global event was XR Central founded?',
-    answers: [
-      { text: 'COVID-19 pandemic', correct: true },
-      { text: 'Global Financial Crisis', correct: false },
-      { text: 'Dot-com Bubble', correct: false },
-      { text: 'World War II', correct: false },
-    ],
-  },
-  {
-    question: 'Which company is not mentioned as a partner of XR Central?',
-    answers: [
-      { text: 'Google', correct: true },
-      { text: 'SpiceJet', correct: false },
-      { text: 'Mercedes Benz', correct: false },
-      { text: 'HCL', correct: false },
-    ],
-  },
-  {
-    question: 'Which product sector is XR Central heavily involved in?',
-    answers: [
-      { text: 'Metaverse experiences', correct: true },
-      { text: 'Cloud computing', correct: false },
-      { text: 'Cybersecurity', correct: false },
-      { text: 'Blockchain', correct: false },
-    ],
-  },
-  {
-    question: 'How does XR Central primarily deliver its services?',
-    answers: [
-      { text: 'Subscription model', correct: true },
-      { text: 'One-time purchase', correct: false },
-      { text: 'Freemium model', correct: false },
-      { text: 'Pay-per-use model', correct: false },
-    ],
-  },
-]
+// const questions = [
+//   {
+//     question: 'What is the flagship product of XR Central?',
+//     answers: [
+//       { text: 'MetaQube', correct: true },
+//       { text: 'MetaWorld', correct: false },
+//       { text: 'XRBuilder', correct: false },
+//       { text: 'VRStudio', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'Which industry sectors has XR Central worked with?',
+//     answers: [
+//       { text: 'Aviation, Automotive, and Art', correct: true },
+//       { text: 'Retail, Food & Beverage, and Real Estate', correct: false },
+//       { text: 'Healthcare, Education, and Finance', correct: false },
+//       { text: 'Sports, Entertainment, and Tourism', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'Who are the founders of XR Central?',
+//     answers: [
+//       { text: 'Anshul Agarwal and Shrey Mishra', correct: true },
+//       { text: 'Sundar Pichai and Satya Nadella', correct: false },
+//       { text: 'Elon Musk and Mark Zuckerberg', correct: false },
+//       { text: 'Bill Gates and Steve Jobs', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'In which city is XR Central based?',
+//     answers: [
+//       { text: 'Gurgaon', correct: true },
+//       { text: 'Bangalore', correct: false },
+//       { text: 'Mumbai', correct: false },
+//       { text: 'New Delhi', correct: false },
+//     ],
+//   },
+//   {
+//     question:
+//       "What percentage of XR Central's revenue comes from metaverse as a service?",
+//     answers: [
+//       { text: '80%', correct: true },
+//       { text: '60%', correct: false },
+//       { text: '50%', correct: false },
+//       { text: '30%', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'What type of platform is MetaQube?',
+//     answers: [
+//       { text: 'No-code platform', correct: true },
+//       { text: 'Low-code platform', correct: false },
+//       { text: 'Full-code platform', correct: false },
+//       { text: 'Hybrid-code platform', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'During which global event was XR Central founded?',
+//     answers: [
+//       { text: 'COVID-19 pandemic', correct: true },
+//       { text: 'Global Financial Crisis', correct: false },
+//       { text: 'Dot-com Bubble', correct: false },
+//       { text: 'World War II', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'Which company is not mentioned as a partner of XR Central?',
+//     answers: [
+//       { text: 'Google', correct: true },
+//       { text: 'SpiceJet', correct: false },
+//       { text: 'Mercedes Benz', correct: false },
+//       { text: 'HCL', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'Which product sector is XR Central heavily involved in?',
+//     answers: [
+//       { text: 'Metaverse experiences', correct: true },
+//       { text: 'Cloud computing', correct: false },
+//       { text: 'Cybersecurity', correct: false },
+//       { text: 'Blockchain', correct: false },
+//     ],
+//   },
+//   {
+//     question: 'How does XR Central primarily deliver its services?',
+//     answers: [
+//       { text: 'Subscription model', correct: true },
+//       { text: 'One-time purchase', correct: false },
+//       { text: 'Freemium model', correct: false },
+//       { text: 'Pay-per-use model', correct: false },
+//     ],
+//   },
+// ]
+
+const questions=[];
 
 const rooms = {}
 let joinedUsers = []
@@ -132,10 +134,11 @@ function askNewQuestion(room) {
     return
   }
   const randomIndex = Math.floor(Math.random() * questions.length)
-  const question = questions[randomIndex]
+  const ques = questions[randomIndex]
+  console.log(questions);
   return {
-    question: question.question,
-    answers: question.answers.map((answer) => answer.text),
+    question: ques.question,
+    answers: ques.answers.map((answer) => answer.text),
     timer: 10,
   }
   rooms[room].currentQuestion = question
@@ -200,6 +203,11 @@ io.on('connection', (socket) => {
       isAdmin: rooms[room].admin.socketId === socket.id,
     })
   })
+
+  socket.on('addQuestion', (question) => {
+    questions.push(question); // add the question to the array
+    console.log('Question added:', question);
+  });
 
   socket.on('startGame', ({ room }) => {
     const StartAskingQuestion = () => {

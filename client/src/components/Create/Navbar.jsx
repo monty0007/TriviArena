@@ -1,15 +1,23 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
+import { Question } from '../../context/QuestionContext';
+import io from 'socket.io-client';
 
 export default function Navbar() {
   let navigate = useNavigate()
   let location = useLocation()
+  const socket = io('http://localhost:3000')
+
+  const {
+    mainQuestion
+  } = useContext(Question);
 
   const routeChange = () => {
     navigate('/')
   }
 
   const handleClick=()=>{
+    socket.emit('addQuestion', mainQuestion);
     navigate('/host')
   }
 

@@ -162,9 +162,9 @@ export default function Join() {
               <div className="time">
                 Remaining Time: {seconds}
               </div>
-              {/* <div className="question">
+              <div className="question">
                 <p className="question-text">{question}</p>
-              </div> */}
+              </div>
               <ul>
                 {options.map((answer, index) => (
                   <li key={index}>
