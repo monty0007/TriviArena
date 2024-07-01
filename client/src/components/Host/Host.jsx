@@ -17,8 +17,8 @@ function Host() {
   const [answered, setAnswered] = useState(false)
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null)
   const [isQuestionActive, setIsQuestionActive] = useState(false) // New state for tracking if question is active
-  const { setRoom, room } = useContext(Question)
-  let navigate = useNavigate()
+  const { setRoom, room,mainQuestion } = useContext(Question)
+  
 
   useEffect(() => {
     if (seconds === 0) return;
@@ -34,7 +34,7 @@ function Host() {
   useEffect(() => {
     socket.emit(
       'joinRoom',
-      { room: room, name: 'Host' },
+      { room: room, name: 'Host',questions:mainQuestion },
       ({ users, room, isAdmin }) => {
         setRoom(room)
         setJoinedUsers(users)

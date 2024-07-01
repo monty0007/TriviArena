@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import './Join.css';
 import io from 'socket.io-client';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Question } from '../../context/QuestionContext';
 
 const socket = io('http://localhost:3000');
 
@@ -11,12 +12,14 @@ export default function Join() {
   const [name, setName] = useState('');
   const [info, setInfo] = useState(false);
   const [question, setQuestion] = useState('');
+  const [questionIndex, setquestionIndex] = useState('');
   const [options, setOptions] = useState([]); // Initialize options as an empty array
   const [scores, setScores] = useState([]);
   const [seconds, setSeconds] = useState('');
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [winner, setWinner] = useState();
+ 
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -28,7 +31,23 @@ export default function Join() {
   const handleAnswer = (answerIndex) => {
     if (!answered) {
       setSelectedAnswerIndex(answerIndex);
-      socket.emit('submitAnswer', room, answerIndex);
+      socket.emit('submitAnswer', room, questionIndex,answerIndex,(data)=>{
+        console.log(data);
+        if (data.isCorrect) {
+          toast(`Correct! ${data.playerName} got it right`, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            newestOnTop: false,
+            closeOnClick: true,
+            pauseOnFocusLoss: true,
+            draggable: true,
+            pauseOnHover: true,
+            theme: 'light',
+          });
+        }
+        setScores(data.scores);
+      });
       setAnswered(true);
     }
   };
@@ -59,26 +78,11 @@ export default function Join() {
       setQuestion(question.question);
       setOptions(question.answers); // Update options with data.answers
       setSeconds(question.timer);
+      setquestionIndex(question.questionIndex)
       setAnswered(false);
       setSelectedAnswerIndex(null); // Clear selected answer index
     });
-    socket.on('answerResult', (data) => {
-      console.log(data);
-      if (data.isCorrect) {
-        toast(`Correct! ${data.playerName} got it right`, {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          newestOnTop: false,
-          closeOnClick: true,
-          pauseOnFocusLoss: true,
-          draggable: true,
-          pauseOnHover: true,
-          theme: 'light',
-        });
-      }
-      setScores(data.scores);
-    });
+  
     socket.on('gameOver', (data) => {
       setWinner(data.winner);
     });

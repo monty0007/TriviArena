@@ -6,11 +6,11 @@ import './index.css'
 import QuestionContext from './context/QuestionContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <QuestionContext>
     <BrowserRouter>
         <App />
     </BrowserRouter>
     </QuestionContext>
-  </React.StrictMode>
+  // </React.StrictMode>
 )

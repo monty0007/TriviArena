@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Question } from '../../context/QuestionContext';
-import { createQuiz, updateQuiz } from '../Api/Api';
-import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 from uuid package
 
 function Mainbody() {
   const [uploading, setUploading] = useState(false);
@@ -22,7 +20,6 @@ function Mainbody() {
     setDisplayQuestion,
     quiz,
     setQuiz,
-    id,
   } = useContext(Question);
 
   useEffect(() => {
@@ -78,59 +75,27 @@ function Mainbody() {
         }
         return { ...option, isCorrect: false };
       }),
-    }))
+    }));
   }
 
   useEffect(() => {
     console.log('quiz:', quiz);
-    displayQuestion.answerList.map((opt)=>{
-      if(opt.isCorrect === true ){
-        setCorrectOption(opt.name)
-        return
+    displayQuestion.answerList.forEach((opt) => {
+      if (opt.isCorrect === true) {
+        setCorrectOption(opt.name);
+        return;
       }
-    }) 
+    });
   }, [displayQuestion, mainQuestion, quiz]);
-  
-  useEffect(()=>{
-     //re render at correctoption change
-  }, [correctOption])
 
-  async function handleSaveQuestion() {
-    const updatedQuestions = mainQuestion.map((question) =>
-      question.questionIndex === displayQuestion.questionIndex ? displayQuestion : question
-    );
-  
-    setMainQuestion(updatedQuestions);
-  
-    // Generate a new ID if it doesn't exist (for new quiz creation)
-    const newQuizId = quiz._id || uuidv4();
-    console.log(newQuizId);
-  
-    // Create an updated quiz object
-    const updatedQuiz = {
-      ...quiz,
-      _id: newQuizId,
-      questionList: updatedQuestions,
-      numberOfQuestions: updatedQuestions.length,
-    };
-  
-    setQuiz(updatedQuiz);
-  
-    try {
-      // If id exists, update the quiz; otherwise, create a new quiz
-      if (quiz._id) {
-        console.log("Updating quiz with id: ", quiz._id);
-        await updateQuiz(quiz._id, updatedQuiz);
-      } else {
-        console.log("Creating new quiz");
-        await createQuiz(updatedQuiz);
-      }
-      console.log('Data sent successfully');
-    } catch (error) {
-      console.error('Error saving quiz:', error);
-    }
-  }
-  
+  useEffect(() => {
+    // Rerender at correctOption change
+  }, [correctOption]);
+
+  useEffect(() => {
+    // Additional logic or side effects
+  }, [/* dependencies */]);
+
   return (
     <div className="mainbody">
       <div className="main-bodyinput">
@@ -145,10 +110,7 @@ function Mainbody() {
           Find and insert media
           <p>
             <input type="file" />
-            <button disabled={uploading}>
-              {uploading ? 'Uploading' : 'Upload Image'}
-            </button>
-            <button onClick={handleSaveQuestion}>Save Question</button>
+            <button disabled={uploading}>{uploading ? 'Uploading' : 'Upload Image'}</button>
           </p>
         </div>
       </div>
@@ -157,7 +119,6 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option1"
-            // value={options.option1}
             value={displayQuestion.answerList[0].body}
             className="answer-input-1"
             type="text"
@@ -175,7 +136,6 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option2"
-            // value={options.option2}
             value={displayQuestion.answerList[1].body}
             className="answer-input-3"
             type="text"
@@ -195,7 +155,6 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option3"
-            // value={options.option3}
             value={displayQuestion.answerList[2].body}
             className="answer-input-2"
             type="text"
@@ -213,7 +172,6 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option4"
-            // value={options.option4}
             value={displayQuestion.answerList[3].body}
             className="answer-input-4"
             type="text"
@@ -235,3 +193,4 @@ function Mainbody() {
 }
 
 export default Mainbody;
+

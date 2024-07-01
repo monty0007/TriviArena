@@ -78,7 +78,7 @@ function Dashboard() {
         {userDetails ? (
           <>
             <div className="top-right">
-              <button className="btn btn-primary" onClick={handleLogout}>
+             <button className="btn btn-primary" onClick={handleLogout}>
                 Logout
               </button>
             </div>
@@ -92,7 +92,7 @@ function Dashboard() {
               <img className="plus" src="plus.jpg" alt="" onClick={handleCreate} />
             </div>
             <div className="quiz-list">
-              {quizzes.length > 0 ? (
+              {quizzes.length > 0? (
                 quizzes.map((quiz) => (
                   <div key={quiz._id} className="quiz-item" onClick={() => handleQuizClick(quiz._id)}>
                     <h4>{quiz.name}</h4>

@@ -112,7 +112,7 @@ const io = socketIo(server, {
 //   },
 // ]
 
-const questions=[];
+// let questions=[];
 
 const rooms = {}
 let joinedUsers = []
@@ -133,12 +133,14 @@ function askNewQuestion(room) {
     activeRoomCodes.delete(room)
     return
   }
+  const questions=rooms[room].questions;
   const randomIndex = Math.floor(Math.random() * questions.length)
   const ques = questions[randomIndex]
-  console.log(questions);
+
   return {
     question: ques.question,
-    answers: ques.answers.map((answer) => answer.text),
+    questionIndex:ques.questionIndex,
+    answers: ques.answerList?.map((answer) => answer.body),
     timer: 10,
   }
   rooms[room].currentQuestion = question
@@ -167,7 +169,7 @@ function askNewQuestion(room) {
 }
 
 io.on('connection', (socket) => {
-  socket.on('joinRoom', ({ room, name }, callback) => {
+  socket.on('joinRoom', ({ room, name,questions }, callback) => {
     if (!room) {
       room = generateUniqueSixDigitPin()
       rooms[room] = {
@@ -180,6 +182,7 @@ io.on('connection', (socket) => {
           socketId: socket.id,
           name,
         },
+        questions
       }
       activeRoomCodes.add(room)
     } else {
@@ -188,12 +191,13 @@ io.on('connection', (socket) => {
         console.error(`Room ${room} does not exist.`)
         return
       }
-      rooms[room].players.push({ socketId: socket.id, name })
+      rooms[room].players.push({ socketId: socket.id, name,score:0 })
       socket.broadcast.to(room).emit('message', `${name} has joined the room`)
       socket.broadcast.to(room).emit('userJoined', {
         users: rooms[room].players,
       })
     }
+    console.log(rooms[room].players);
 
     socket.join(room)
 
@@ -204,10 +208,6 @@ io.on('connection', (socket) => {
     })
   })
 
-  socket.on('addQuestion', (question) => {
-    questions.push(question); // add the question to the array
-    console.log('Question added:', question);
-  });
 
   socket.on('startGame', ({ room }) => {
     const StartAskingQuestion = () => {
@@ -231,45 +231,58 @@ io.on('connection', (socket) => {
     StartAskingQuestion()
   })
 
-  socket.on('submitAnswer', (room, answerIndex) => {
+  socket.on('submitAnswer', (room, questionIndex, callback) => {
     const currentPlayer = rooms[room].players.find(
-      (player) => player.id === socket.id
+      (player) => player.socketId === socket.id
     )
-
-    if (currentPlayer) {
-      const correctAnswer = rooms[room].correctAnswer
-      const isCorrect = correctAnswer !== null && correctAnswer === answerIndex
-      if (isCorrect) {
-        currentPlayer.score = (currentPlayer.score || 0) + 1
-      } else {
-        currentPlayer.score = Math.max((currentPlayer.score || 0) - 1, 0) // Ensure score is not negative
-      }
-
-      clearTimeout(rooms[room].questionTimeout)
-
-      io.to(room).emit('answerResult', {
-        playerName: currentPlayer.name,
-        isCorrect,
-        correctAnswer,
-        scores: rooms[room].players.map((player) => ({
-          name: player.name,
-          score: player.score || 0,
-        })),
-      })
-
-      const winningThreshold = 5
-      const winner = rooms[room].players.find(
-        (player) => (player.score || 0) >= winningThreshold
-      )
-      if (winner) {
-        io.to(room).emit('gameOver', { winner: winner.name })
-        delete rooms[room]
-        activeRoomCodes.delete(room)
-      } else {
-        askNewQuestion(room)
-      }
+  
+    if (!currentPlayer) {
+      console.error('Player not found in the room');
+      return;
     }
-  })
+  
+    const question = rooms[room].questions.find((q) => q.questionIndex === questionIndex);
+    
+    if (!question) {
+      console.error('Question not found');
+      return;
+    }
+  
+    const submittedAnswer = question.answerList.find((answer) => answer.isCorrect);
+    const correctAnswer = question.answerList.find((answer) => answer.correct);
+  
+    const isCorrect = submittedAnswer && submittedAnswer.body === correctAnswer.body;
+  
+    if (isCorrect) {
+      currentPlayer.score += 1;
+    }
+  
+    clearTimeout(rooms[room].questionTimeout);
+  
+    callback({
+      playerName: currentPlayer.name,
+      isCorrect,
+      correctAnswer: correctAnswer.body,
+      scores: rooms[room].players.map((player) => ({
+        name: player.name,
+        score: player.score || 0,
+      })),
+    });
+  
+    const winningThreshold = 5;
+    const winner = rooms[room].players.find((player) => (player.score || 0) >= winningThreshold);
+  
+    if (winner) {
+      io.to(room).emit('gameOver', { winner: winner.name });
+      delete rooms[room];
+      activeRoomCodes.delete(room);
+    } else {
+      askNewQuestion(room);
+    }
+  });
+  
+
+
   socket.on('startGame', ({ room }) => {
     const StartAskingQuestion = () => {
       const question = askNewQuestion(room)
