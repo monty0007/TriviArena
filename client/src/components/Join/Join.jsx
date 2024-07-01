@@ -29,6 +29,8 @@ export default function Join() {
   }
 
   const handleAnswer = (answerIndex) => {
+    console.log(answerIndex);
+    console.log(answered);
     if (!answered) {
       setSelectedAnswerIndex(answerIndex);
       socket.emit('submitAnswer', room, questionIndex,answerIndex,(data)=>{

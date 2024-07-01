@@ -240,39 +240,38 @@ io.on('connection', (socket) => {
   //   StartAskingQuestion()
   // })
 
-  socket.on('submitAnswer', (room, questionIndex, callback) => {
+  socket.on('submitAnswer', (room, questionIndex, answerIndex, callback) => {
     const currentPlayer = rooms[room].players.find(
       (player) => player.socketId === socket.id
     )
-
+  
     if (!currentPlayer) {
       console.error('Player not found in the room')
       return
     }
-
+  
     const question = rooms[room].questions.find(
       (q) => q.questionIndex === questionIndex
     )
-
+  
     if (!question) {
       console.error('Question not found')
       return
     }
+  
+    const correctAnswer = question.answerList.find((answer) => answer.isCorrect)
+    const submittedAnswer = question.answerList[answerIndex]
+    console.log(submittedAnswer);
+    console.log("correct answer => ",correctAnswer);
 
-    const submittedAnswer = question.answerList.find(
-      (answer) => answer.isCorrect
-    )
-    const correctAnswer = question.answerList.find((answer) => answer.correct)
-
-    const isCorrect =
-      submittedAnswer && submittedAnswer.body === correctAnswer.body
-
+    const isCorrect = submittedAnswer.body === correctAnswer.body
+  
     if (isCorrect) {
       currentPlayer.score += 1
     }
-
+  
     clearTimeout(rooms[room].questionTimeout)
-
+  
     callback({
       playerName: currentPlayer.name,
       isCorrect,
@@ -282,12 +281,12 @@ io.on('connection', (socket) => {
         score: player.score || 0,
       })),
     })
-
+  
     const winningThreshold = 5
     const winner = rooms[room].players.find(
       (player) => (player.score || 0) >= winningThreshold
     )
-
+  
     if (winner) {
       io.to(room).emit('gameOver', { winner: winner.name })
       delete rooms[room]
