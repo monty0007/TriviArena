@@ -80,28 +80,22 @@ function Mainbody() {
 
   useEffect(() => {
     console.log('quiz:', quiz);
-    displayQuestion.answerList.forEach((opt) => {
-      if (opt.isCorrect === true) {
-        setCorrectOption(opt.name);
-        return;
-      }
-    });
+    if (displayQuestion) {
+      displayQuestion.answerList.forEach((opt) => {
+        if (opt.isCorrect === true) {
+          setCorrectOption(opt.name);
+          return;
+        }
+      });
+    }
   }, [displayQuestion, mainQuestion, quiz]);
-
-  useEffect(() => {
-    // Rerender at correctOption change
-  }, [correctOption]);
-
-  useEffect(() => {
-    // Additional logic or side effects
-  }, [/* dependencies */]);
 
   return (
     <div className="mainbody">
       <div className="main-bodyinput">
         <input
           onChange={(e) => handleInputQuestion(e)}
-          value={displayQuestion.question}
+          value={displayQuestion?.question || ''}
           className="mainbody-input"
           type="text"
           placeholder="Start typing your question"
@@ -119,7 +113,7 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option1"
-            value={displayQuestion.answerList[0].body}
+            value={displayQuestion?.answerList[0]?.body || ''}
             className="answer-input-1"
             type="text"
             placeholder="Add Answer 1"
@@ -136,7 +130,7 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option2"
-            value={displayQuestion.answerList[1].body}
+            value={displayQuestion?.answerList[1]?.body || ''}
             className="answer-input-3"
             type="text"
             placeholder="Add Answer 2"
@@ -155,7 +149,7 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option3"
-            value={displayQuestion.answerList[2].body}
+            value={displayQuestion?.answerList[2]?.body || ''}
             className="answer-input-2"
             type="text"
             placeholder="Add Answer 3"
@@ -172,7 +166,7 @@ function Mainbody() {
           <input
             onChange={(e) => handleOptions(e)}
             name="option4"
-            value={displayQuestion.answerList[3].body}
+            value={displayQuestion?.answerList[3]?.body || ''}
             className="answer-input-4"
             type="text"
             placeholder="Add Answer 4"
@@ -193,4 +187,3 @@ function Mainbody() {
 }
 
 export default Mainbody;
-

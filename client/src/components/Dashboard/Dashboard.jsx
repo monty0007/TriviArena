@@ -63,13 +63,20 @@ function Dashboard() {
   }
 
   const handleCreate = async () => {
-
-    setQuiz((prevQuiz) => ({
-      ...prevQuiz,
+    // Reset the quiz to ensure it opens as an empty quiz
+    setQuiz({
+      name: '',
       creatorId: user.uid,
-    }));
+      creatorName: user.displayName || '',
+      numberOfQuestions: 0,
+      questionList: [],
+    });
+    setMainQuestion([]);
+    setDisplayQuestion(null); // Ensure displayQuestion is handled safely
+
     navigate('/create');
   };
+  
 
   return (
     <div>
