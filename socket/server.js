@@ -145,29 +145,30 @@ function askNewQuestion(room) {
     answers: ques.answerList?.map((answer) => answer.body),
     timer: 10,
   }
-  rooms[room].currentQuestion = question
 
-  const correctAnswerIndex = question.answers.findIndex(
-    (answer) => answer.correct
-  )
-  rooms[room].correctAnswer = correctAnswerIndex
-  io.to(room).emit('newQuestion', {
-    question: question.question,
-    answers: question.answers.map((answer) => answer.text),
-    timer: 10,
-  })
-  rooms[room].questionTimeout = setTimeout(() => {
-    io.to(room).emit('answerResult', {
-      playerName: 'No one',
-      isCorrect: false,
-      correctAnswer: rooms[room].correctAnswer,
-      scores: rooms[room].players.map((player) => ({
-        name: player.name,
-        score: player.score || 0,
-      })),
-    })
-    askNewQuestion(room)
-  }, 10000)
+  // rooms[room].currentQuestion = question
+
+  // const correctAnswerIndex = question.answers.findIndex(
+  //   (answer) => answer.correct
+  // )
+  // rooms[room].correctAnswer = correctAnswerIndex
+  // io.to(room).emit('newQuestion', {
+  //   question: question.question,
+  //   answers: question.answers.map((answer) => answer.text),
+  //   timer: 10,
+  // })
+  // rooms[room].questionTimeout = setTimeout(() => {
+  //   io.to(room).emit('answerResult', {
+  //     playerName: 'No one',
+  //     isCorrect: false,
+  //     correctAnswer: rooms[room].correctAnswer,
+  //     scores: rooms[room].players.map((player) => ({
+  //       name: player.name,
+  //       score: player.score || 0,
+  //     })),
+  //   })
+  //   askNewQuestion(room)
+  // }, 10000)
 }
 
 io.on('connection', (socket) => {
@@ -264,8 +265,9 @@ io.on('connection', (socket) => {
     console.log(submittedAnswer);
     console.log("correct answer => ",correctAnswer);
 
-    const isCorrect = submittedAnswer.body === correctAnswer.body
-  
+    const isCorrect = submittedAnswer.isCorrect === correctAnswer.isCorrect
+    console.log(isCorrect);
+
     if (isCorrect) {
       currentPlayer.score += 1
     }
