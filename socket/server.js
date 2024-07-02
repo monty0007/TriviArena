@@ -18,101 +18,6 @@ const io = socketIo(server, {
   },
 })
 
-// const questions = [
-//   {
-//     question: 'What is the flagship product of XR Central?',
-//     answers: [
-//       { text: 'MetaQube', correct: true },
-//       { text: 'MetaWorld', correct: false },
-//       { text: 'XRBuilder', correct: false },
-//       { text: 'VRStudio', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'Which industry sectors has XR Central worked with?',
-//     answers: [
-//       { text: 'Aviation, Automotive, and Art', correct: true },
-//       { text: 'Retail, Food & Beverage, and Real Estate', correct: false },
-//       { text: 'Healthcare, Education, and Finance', correct: false },
-//       { text: 'Sports, Entertainment, and Tourism', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'Who are the founders of XR Central?',
-//     answers: [
-//       { text: 'Anshul Agarwal and Shrey Mishra', correct: true },
-//       { text: 'Sundar Pichai and Satya Nadella', correct: false },
-//       { text: 'Elon Musk and Mark Zuckerberg', correct: false },
-//       { text: 'Bill Gates and Steve Jobs', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'In which city is XR Central based?',
-//     answers: [
-//       { text: 'Gurgaon', correct: true },
-//       { text: 'Bangalore', correct: false },
-//       { text: 'Mumbai', correct: false },
-//       { text: 'New Delhi', correct: false },
-//     ],
-//   },
-//   {
-//     question:
-//       "What percentage of XR Central's revenue comes from metaverse as a service?",
-//     answers: [
-//       { text: '80%', correct: true },
-//       { text: '60%', correct: false },
-//       { text: '50%', correct: false },
-//       { text: '30%', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'What type of platform is MetaQube?',
-//     answers: [
-//       { text: 'No-code platform', correct: true },
-//       { text: 'Low-code platform', correct: false },
-//       { text: 'Full-code platform', correct: false },
-//       { text: 'Hybrid-code platform', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'During which global event was XR Central founded?',
-//     answers: [
-//       { text: 'COVID-19 pandemic', correct: true },
-//       { text: 'Global Financial Crisis', correct: false },
-//       { text: 'Dot-com Bubble', correct: false },
-//       { text: 'World War II', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'Which company is not mentioned as a partner of XR Central?',
-//     answers: [
-//       { text: 'Google', correct: true },
-//       { text: 'SpiceJet', correct: false },
-//       { text: 'Mercedes Benz', correct: false },
-//       { text: 'HCL', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'Which product sector is XR Central heavily involved in?',
-//     answers: [
-//       { text: 'Metaverse experiences', correct: true },
-//       { text: 'Cloud computing', correct: false },
-//       { text: 'Cybersecurity', correct: false },
-//       { text: 'Blockchain', correct: false },
-//     ],
-//   },
-//   {
-//     question: 'How does XR Central primarily deliver its services?',
-//     answers: [
-//       { text: 'Subscription model', correct: true },
-//       { text: 'One-time purchase', correct: false },
-//       { text: 'Freemium model', correct: false },
-//       { text: 'Pay-per-use model', correct: false },
-//     ],
-//   },
-// ]
-
-// let questions=[];
 
 const rooms = {}
 let joinedUsers = []
@@ -125,6 +30,7 @@ function generateUniqueSixDigitPin() {
   } while (activeRoomCodes.has(pin)) // Ensure the pin is unique
   return pin
 }
+
 function askNewQuestion(room) {
   if (rooms[room].players.length === 0) {
     clearTimeout(rooms[room].questionTimeout)
@@ -134,7 +40,7 @@ function askNewQuestion(room) {
   }
   const questions = rooms[room].questions
   const currentQuestionIndex = rooms[room].currentQuestionIndex || 0
-  console.log(currentQuestionIndex);
+  console.log("currentQuestionIndex=",currentQuestionIndex);
   const ques = questions[currentQuestionIndex]
 
   rooms[room].currentQuestionIndex = (currentQuestionIndex+1 ) % questions.length
@@ -242,61 +148,66 @@ io.on('connection', (socket) => {
   // })
 
   socket.on('submitAnswer', (room, questionIndex, answerIndex, callback) => {
-    const currentPlayer = rooms[room].players.find(
-      (player) => player.socketId === socket.id
-    )
-  
-    if (!currentPlayer) {
-      console.error('Player not found in the room')
-      return
-    }
-  
-    const question = rooms[room].questions.find(
-      (q) => q.questionIndex === questionIndex
-    )
-  
-    if (!question) {
-      console.error('Question not found')
-      return
-    }
-  
-    const correctAnswer = question.answerList.find((answer) => answer.isCorrect)
-    const submittedAnswer = question.answerList[answerIndex]
-    console.log(submittedAnswer);
-    console.log("correct answer => ",correctAnswer);
+  if (!rooms[room]) {
+    console.error(`Room ${room} does not exist.`);
+    return;
+  }
 
-    const isCorrect = submittedAnswer.isCorrect === correctAnswer.isCorrect
-    console.log(isCorrect);
+  const currentPlayer = rooms[room].players.find(
+    (player) => player.socketId === socket.id
+  );
 
-    if (isCorrect) {
-      currentPlayer.score += 1
-    }
-  
-    clearTimeout(rooms[room].questionTimeout)
-  
-    callback({
-      playerName: currentPlayer.name,
-      isCorrect,
-      correctAnswer: correctAnswer.body,
-      scores: rooms[room].players.map((player) => ({
-        name: player.name,
-        score: player.score || 0,
-      })),
-    })
-  
-    const winningThreshold = 5
-    const winner = rooms[room].players.find(
-      (player) => (player.score || 0) >= winningThreshold
-    )
-  
-    if (winner) {
-      io.to(room).emit('gameOver', { winner: winner.name })
-      delete rooms[room]
-      activeRoomCodes.delete(room)
-    } else {
-      askNewQuestion(room)
-    }
-  })
+  if (!currentPlayer) {
+    console.error('Player not found in the room');
+    return;
+  }
+
+  const question = rooms[room].questions.find(
+    (q) => q.questionIndex === questionIndex
+  );
+
+  if (!question) {
+    console.error('Question not found');
+    return;
+  }
+
+  const correctAnswer = question.answerList.find((answer) => answer.isCorrect);
+  const submittedAnswer = question.answerList[answerIndex];
+
+  const isCorrect = submittedAnswer.isCorrect === correctAnswer.isCorrect;
+  console.log("isCorrect=", isCorrect);
+
+  if (isCorrect) {
+    currentPlayer.score += 1;
+  }
+
+  clearTimeout(rooms[room].questionTimeout);
+
+  callback({
+    playerName: currentPlayer.name,
+    isCorrect,
+    correctAnswer: correctAnswer.body,
+    scores: rooms[room].players.map((player) => ({
+      name: player.name,
+      score: player.score || 0,
+    })),
+  });
+
+  const winningThreshold = 5;
+  const winner = rooms[room].players.find(
+    (player) => (player.score || 0) >= winningThreshold
+  );
+
+  if (winner) {
+    io.to(room).emit('gameOver', { winner: winner.name });
+    delete rooms[room];
+    activeRoomCodes.delete(room);
+  } 
+  // else {
+  //   askNewQuestion(room);
+  // }
+});
+
 
   socket.on('startGame', ({ room }) => {
     const StartAskingQuestion = () => {
@@ -305,11 +216,12 @@ io.on('connection', (socket) => {
       io.to(room).emit('newQuestion', question)
 
       socket.broadcast.to(room).emit('newQuestion', { question })
+      console.log(rooms[room]);
       setTimeout(() => {
         socket.broadcast.to(room).emit('answerResult', {
           playerName: 'No one',
           isCorrect: false,
-          correctAnswer: rooms[room].correctAnswer,
+          correctAnswer: rooms[room].correctAnswer.isCorrect,
           scores: rooms[room].players.map((player) => ({
             name: player.name,
             score: player.score || 0,
@@ -331,6 +243,8 @@ io.on('connection', (socket) => {
       joinedUsers = joinedUsers.filter((user) => user.id !== socket.id) // remove user from joinedUsers array
     }
   })
+  
+
 })
 
 io.emit('joinedUsers', joinedUsers)

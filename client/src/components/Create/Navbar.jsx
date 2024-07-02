@@ -27,6 +27,8 @@ export default function Navbar() {
 
     const newQuizId = quiz._id || uuidv4();
 
+    
+    console.log(newQuizId);
     const updatedQuiz = {
       ...quiz,
       _id: newQuizId,

@@ -189,7 +189,7 @@
 .mainbody{
     height: 93vh;
     width: 67%;
-    background-image: url(../Image/classroom.png);
+    background-image: url(../Image/gradient_2.jpg);
     background-size: cover;
 }
 
@@ -216,14 +216,14 @@
 }
 
 .mainbody .image{
-    margin: 25px 300px 25px;
+    margin: 25px 300px 5px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 80px;
-    border: 2px solid black;
-    background-color: #F9F6EE;
+    /* border: 2px solid black; */
+  background-color: rgba(39, 38, 38, 0.379); 
 }
 
 .mainbody .image p{
@@ -239,19 +239,23 @@
 }
 
 .mainbody .answer-input-1{
-    background-color: #9e7ac9;
+    /* background-color: #9e7ac9; */
+    background-color: #EB2D77;
 }
 
 .mainbody .answer-input-3{
-    background-color: #64C5EB;
+    /* background-color: #64C5EB; */
+    background-color: #64891F;
 }
 
 .mainbody .answer-input-2{
-    background-color: #E84D8A;
+    /* background-color: #E84D8A; */
+    background-color: #F06B12;
 }
 
 .mainbody .answer-input-4{
-    background-color: #FEB326;
+    /* background-color: #FEB326; */
+    background-color: #BA40C5;
 }
 
 .mainbody .answer input{
@@ -260,20 +264,25 @@
     padding: 30px;
     padding-right: 200px;
     border-radius: 10px;
-    /* border-style: none; */
+    border-style: none;
+    font-size: 18px;
 }
 
 .mainbody .answer-input-1::placeholder{
-    color: black;
+  color: white;
 }
 .mainbody .answer-input-2::placeholder{
-    color: black;
+  color: white;
 }
 .mainbody .answer-input-3::placeholder{
-    color: black;
+  color: white;
 }
 .mainbody .answer-input-4::placeholder{
-    color: black;
+  color: white;
+}
+
+.mainbody .xrc{
+  height: 100px;
 }
 
 /* In your CSS file (e.g., styles.css) */
@@ -305,16 +314,17 @@
   background: #007bff;
 }
 
+
 .custom-radio:checked + label:after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 5px;
+  /* content: ''; */
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px; /* Adjust as needed */
+  border: 1px solid #ccc;
   border-radius: 50%;
-  background: #fff;
+  vertical-align: middle;
+  background-color: #fff;
 }
 
 

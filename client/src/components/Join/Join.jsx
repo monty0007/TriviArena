@@ -1,40 +1,39 @@
-import React, { useContext, useEffect, useState } from 'react';
-import './Join.css';
-import io from 'socket.io-client';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Question } from '../../context/QuestionContext';
+import React, { useContext, useEffect, useState } from 'react'
+import './Join.css'
+import io from 'socket.io-client'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { Question } from '../../context/QuestionContext'
 
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:3000')
 
 export default function Join() {
-  const [room, setRoom] = useState('');
-  const [name, setName] = useState('');
-  const [info, setInfo] = useState(false);
-  const [question, setQuestion] = useState('');
-  const [questionIndex, setquestionIndex] = useState('');
-  const [options, setOptions] = useState([]); // Initialize options as an empty array
-  const [scores, setScores] = useState([]);
-  const [seconds, setSeconds] = useState('');
-  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
-  const [answered, setAnswered] = useState(false);
-  const [winner, setWinner] = useState();
- 
+  const [room, setRoom] = useState('')
+  const [name, setName] = useState('')
+  const [info, setInfo] = useState(false)
+  const [question, setQuestion] = useState('')
+  const [questionIndex, setquestionIndex] = useState('')
+  const [options, setOptions] = useState([]) // Initialize options as an empty array
+  const [scores, setScores] = useState([])
+  const [seconds, setSeconds] = useState('')
+  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null)
+  const [answered, setAnswered] = useState(false)
+  const [winner, setWinner] = useState()
 
   function handleSubmit(e) {
-    e.preventDefault();
+    e.preventDefault()
     if (name && room) {
-      setInfo(true);
+      setInfo(true)
     }
   }
 
   const handleAnswer = (answerIndex) => {
-    console.log(answerIndex);
-    console.log(answered);
+    console.log(answerIndex)
+    console.log(answered)
     if (!answered) {
-      setSelectedAnswerIndex(answerIndex);
-      socket.emit('submitAnswer', room, questionIndex,answerIndex,(data)=>{
-        console.log(data);
+      setSelectedAnswerIndex(answerIndex)
+      socket.emit('submitAnswer', room, questionIndex, answerIndex, (data) => {
+        console.log(data)
         if (data.isCorrect) {
           toast(`Correct! ${data.playerName} got it right`, {
             position: 'top-right',
@@ -46,13 +45,13 @@ export default function Join() {
             draggable: true,
             pauseOnHover: true,
             theme: 'light',
-          });
+          })
         }
-        setScores(data.scores);
-      });
-      setAnswered(true);
+        setScores(data.scores)
+      })
+      setAnswered(true)
     }
-  };
+  }
 
   useEffect(() => {
     socket.on('message', (message) => {
@@ -66,47 +65,47 @@ export default function Join() {
         draggable: true,
         pauseOnHover: true,
         theme: 'light',
-      });
-    });
-    return () => socket.off('message');
-  }, []);
+      })
+    })
+    return () => socket.off('message')
+  }, [])
 
   useEffect(() => {
     socket.on('gameStarted', () => {
-      setInfo(true);
-    });
+      setInfo(true)
+    })
     socket.on('newQuestion', ({ question }) => {
-      console.log(question);
-      setQuestion(question.question);
-      setOptions(question.answers); // Update options with data.answers
-      setSeconds(question.timer);
+      console.log(question)
+      setQuestion(question.question)
+      setOptions(question.answers) // Update options with data.answers
+      setSeconds(question.timer)
       setquestionIndex(question.questionIndex)
-      setAnswered(false);
-      setSelectedAnswerIndex(null); // Clear selected answer index
-    });
-  
+      setAnswered(false)
+      setSelectedAnswerIndex(null) // Clear selected answer index
+    })
+
     socket.on('gameOver', (data) => {
-      setWinner(data.winner);
-    });
+      setWinner(data.winner)
+    })
     // Clean up socket listener
     return () => {
-      socket.off('newQuestion');
-      socket.off('answerResult');
-      socket.off('gameOver');
-      socket.off('gameStarted');
-    };
-  }, []); // Empty dependency array to run only once
+      socket.off('newQuestion')
+      socket.off('answerResult')
+      socket.off('gameOver')
+      socket.off('gameStarted')
+    }
+  }, []) // Empty dependency array to run only once
 
   useEffect(() => {
-    if (seconds === 0) return;
+    if (seconds === 0) return
 
     const timeInterval = setInterval(() => {
-      setSeconds((prevTime) => prevTime - 1);
-    }, 1000);
+      setSeconds((prevTime) => prevTime - 1)
+    }, 1000)
     return () => {
-      clearInterval(timeInterval);
-    };
-  }, [seconds]);
+      clearInterval(timeInterval)
+    }
+  }, [seconds])
 
   if (winner) {
     return (
@@ -114,7 +113,7 @@ export default function Join() {
         <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
         <img src="tro.jpg" alt="" />
       </div>
-    );
+    )
   }
 
   return (
@@ -147,9 +146,13 @@ export default function Join() {
                 <button
                   className="btn"
                   onClick={() => {
-                    socket.emit('joinRoom', { room, name }, ({ users, room }) => {
-                      setRoom(room);
-                    });
+                    socket.emit(
+                      'joinRoom',
+                      { room, name },
+                      ({ users, room }) => {
+                        setRoom(room)
+                      }
+                    )
                   }}
                 >
                   Join
@@ -165,9 +168,7 @@ export default function Join() {
           <ToastContainer />
           {question ? (
             <div className="quiz-div">
-              <div className="time">
-                Remaining Time: {seconds}
-              </div>
+              <div className="time">Remaining Time: {seconds}</div>
               <div className="question">
                 <p className="question-text">{question}</p>
               </div>
@@ -177,18 +178,28 @@ export default function Join() {
                     <button
                       onClick={() => handleAnswer(index)}
                       disabled={answered}
-                      className={`options ${selectedAnswerIndex === index ? 'selected' : ''}`}
+                      className={`options ${
+                        selectedAnswerIndex === index ? 'selected' : ''
+                      }`}
                     >
                       {answer}
                     </button>
                   </li>
                 ))}
               </ul>
-              {scores.map((player, index) => (
+              {/* {scores.map((player, index) => (
                 <p key={index}>
                   {player.name} : {player.score}
                 </p>
-              ))}
+              ))} */}
+
+              {scores
+                .filter((player) => player.name !== 'Host')
+                .map((player, index) => (
+                  <p key={index}>
+                    {player.name} : {player.score}
+                  </p>
+                ))}
             </div>
           ) : (
             <p>Waiting For Host To Start</p>
@@ -196,5 +207,5 @@ export default function Join() {
         </div>
       )}
     </div>
-  );
+  )
 }

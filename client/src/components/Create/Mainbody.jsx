@@ -101,10 +101,11 @@ function Mainbody() {
           placeholder="Start typing your question"
         />
         <div className="image">
-          Find and insert media
+          {/* Find and insert media */}
+          <img className='xrc' src="loading-xrc.png" alt="" />
           <p>
-            <input type="file" />
-            <button disabled={uploading}>{uploading ? 'Uploading' : 'Upload Image'}</button>
+            {/* <input type="file" /> */}
+            {/* <button disabled={uploading}>{uploading ? 'Uploading' : 'Upload Image'}</button> */}
           </p>
         </div>
       </div>
