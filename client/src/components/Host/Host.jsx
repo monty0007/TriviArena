@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import { FiUser } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
 
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:3000', { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,15 +31,16 @@ function Host() {
   }, [seconds]);
 
   useEffect(() => {
-    socket.emit(
-      'joinRoom',
-      { room: room, name: 'Host', questions: mainQuestion },
-      ({ users, room, isAdmin }) => {
-        setRoom(room);
-        setJoinedUsers(users);
-        setIsLoading(false);
-      }
-    );
+    setIsLoading(true);
+
+    socket.connect();
+
+    socket.emit('joinRoom', { room: room, name: 'Host', questions: mainQuestion }, ({ users, room, isAdmin }) => {
+      setRoom(room);
+      setJoinedUsers(users);
+      setIsLoading(false);
+    });
+
     socket.on('newQuestion', ({ question, answers, timer }) => {
       setQuestion(question);
       setOptions(answers); 
@@ -48,15 +49,21 @@ function Host() {
       setSelectedAnswerIndex(null);
       setIsQuestionActive(true); 
     });
+
     socket.on('userJoined', ({ users }) => {
       setJoinedUsers(users); 
     });
-    setIsLoading(true);
 
     return () => {
       socket.off('newQuestion');
+      socket.off('userJoined');
+      socket.disconnect();
     };
   }, []);
+
+  const startGame = () => {
+    socket.emit('startGame', { room });
+  };
 
   return (
     <div className={`host ${isQuestionActive ? 'question-active' : ''}`}>
@@ -71,7 +78,6 @@ function Host() {
         </div>
       </div>
       <div className="players">
-
         <div className="user-count">
           <FiUser />: {joinedUsers.filter((user) => user.name !== 'Host').length}
         </div>
@@ -87,25 +93,21 @@ function Host() {
             ))
           )}
         </div>
+
         {!isQuestionActive && (
           <div className="start">
-            <button
-              className="btn"
-              onClick={() => {
-                socket.emit('startGame', { room });
-              }}
-            >
+            <button className="btn" onClick={startGame}>
               Start
             </button>
           </div>
         )}
+        
         {question && (
           <div className="question">
             <h2>{question}</h2>
             <div className="time">
-            <IoMdTime />
-            Time remaining: {seconds}
-
+              <IoMdTime />
+              Time remaining: {seconds}
             </div>
             <ul>
               {options.map((answer, index) => (

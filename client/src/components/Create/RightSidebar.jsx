@@ -44,11 +44,11 @@ function RightSidebar() {
       </div>
       <select name="answerTime" value={quiz.answerTime} onChange={handlePoints}>
         <option>---</option>
-        <option value="5">5 Seconds</option>
+        {/* <option value="5">5 Seconds</option> */}
         <option value="10">10 Seconds</option>
-        <option value="20">20 Seconds</option>
-        <option value="30">30 Seconds</option>
-        <option value="60">1 Minute</option>
+        {/* <option value="20">20 Seconds</option> */}
+        {/* <option value="30">30 Seconds</option> */}
+        {/* <option value="60">1 Minute</option> */}
       </select>
       <div className="imagee">
         <img src="gamePoints.svg" alt="" />
@@ -64,7 +64,7 @@ function RightSidebar() {
         <h5>Answer options</h5>
       </div>
       <select name="answerOptions" value={aType} onChange={handlePoints}>
-        <option>---</option>
+        {/* <option>---</option> */}
         <option value="single">Single Select</option>
         {/* <option value="multi">Multi-Select</option> */}
       </select>

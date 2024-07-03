@@ -1,10 +1,10 @@
 .dashboard {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    /* justify-content: center; */
+    /* align-items: center; */
     text-align: center;
-    margin-top: 150px;
+    margin-top: 40px;
   }
   
   .top-right {
@@ -41,9 +41,10 @@
   }
 
   .quiz-list {
+    display: flex;
     padding: 10px;
     margin-top: 20px;
-    display: grid;
+    /* display: grid; */
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-gap: 10px;
     cursor: pointer;
@@ -51,7 +52,7 @@
   
   .quiz-item {
     background-color: #831ee1;
-    padding: 10px;
+    padding: 50px;
     border-radius: 4px;
     transition: transform 0.2s ease-in-out;
     color: white;
@@ -73,4 +74,9 @@
     color: #666;
   }
   
+  .allquiz{
+    height: 100vh;
+    flex-wrap: wrap; 
+    /* display: flex; */
+  }
   

@@ -3,15 +3,8 @@ import { Question } from '../../context/QuestionContext';
 
 function Mainbody() {
   const [uploading, setUploading] = useState(false);
-  const [ques, setQues] = useState('');
-  const [options, setOptions] = useState({
-    option1: '',
-    option2: '',
-    option3: '',
-    option4: '',
-  });
   const [correctOption, setCorrectOption] = useState('');
-
+  
   const {
     mainQuestion,
     setHeadingQuestion,
@@ -23,36 +16,23 @@ function Mainbody() {
   } = useContext(Question);
 
   useEffect(() => {
-    if (!displayQuestion) {
-      setDisplayQuestion({
-        question: '',
-        answerList: [
-          { name: 'option1', body: '', isCorrect: false },
-          { name: 'option2', body: '', isCorrect: false },
-          { name: 'option3', body: '', isCorrect: false },
-          { name: 'option4', body: '', isCorrect: false },
-        ],
-        questionIndex: mainQuestion.length,
-      });
+    if (mainQuestion.length > 0 && !displayQuestion) {
+      setDisplayQuestion(mainQuestion[0]);
     }
   }, [displayQuestion, mainQuestion]);
 
-  function handleInputQuestion(e) {
+  const handleInputQuestion = (e) => {
     const newQuestion = e.target.value;
-    setQues(newQuestion);
     setDisplayQuestion((prev) => ({
       ...prev,
       question: newQuestion,
     }));
     setHeadingQuestion(newQuestion);
-  }
+    updateMainQuestion({ question: newQuestion });
+  };
 
-  function handleOptions(e) {
+  const handleOptions = (e) => {
     const { name, value } = e.target;
-    setOptions((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
     setDisplayQuestion((prev) => ({
       ...prev,
       answerList: prev.answerList.map((option) => {
@@ -62,9 +42,14 @@ function Mainbody() {
         return option;
       }),
     }));
-  }
+    updateMainQuestion({
+      answerList: displayQuestion.answerList.map((option) =>
+        option.name === name ? { ...option, body: value, isCorrect: correctOption === name } : option
+      ),
+    });
+  };
 
-  function handleRadio(e) {
+  const handleRadio = (e) => {
     const { name } = e.target;
     setCorrectOption(name);
     setDisplayQuestion((prev) => ({
@@ -76,43 +61,42 @@ function Mainbody() {
         return { ...option, isCorrect: false };
       }),
     }));
-  }
+    updateMainQuestion({
+      answerList: displayQuestion.answerList.map((option) =>
+        option.name === name ? { ...option, isCorrect: true } : { ...option, isCorrect: false }
+      ),
+    });
+  };
 
-  useEffect(() => {
-    console.log('quiz:', quiz);
-    if (displayQuestion) {
-      displayQuestion.answerList.forEach((opt) => {
-        if (opt.isCorrect === true) {
-          setCorrectOption(opt.name);
-          return;
-        }
-      });
-    }
-  }, [displayQuestion, mainQuestion, quiz]);
+  const updateMainQuestion = (updatedFields) => {
+    setMainQuestion((prevQuestions) =>
+      prevQuestions.map((question) =>
+        question.questionIndex === displayQuestion.questionIndex
+          ? { ...question, ...updatedFields }
+          : question
+      )
+    );
+  };
 
   return (
     <div className="mainbody">
       <div className="main-bodyinput">
         <input
-          onChange={(e) => handleInputQuestion(e)}
+          onChange={handleInputQuestion}
           value={displayQuestion?.question || ''}
           className="mainbody-input"
           type="text"
           placeholder="Start typing your question"
         />
         <div className="image">
-          {/* Find and insert media */}
           <img className='xrc' src="loading-xrc.png" alt="" />
-          <p>
-            {/* <input type="file" /> */}
-            {/* <button disabled={uploading}>{uploading ? 'Uploading' : 'Upload Image'}</button> */}
-          </p>
+          <p></p>
         </div>
       </div>
       <div className="answer">
         <div className="answer-1">
           <input
-            onChange={(e) => handleOptions(e)}
+            onChange={handleOptions}
             name="option1"
             value={displayQuestion?.answerList[0]?.body || ''}
             className="answer-input-1"
@@ -129,7 +113,7 @@ function Mainbody() {
           />
           <label htmlFor="option1"></label>
           <input
-            onChange={(e) => handleOptions(e)}
+            onChange={handleOptions}
             name="option2"
             value={displayQuestion?.answerList[1]?.body || ''}
             className="answer-input-3"
@@ -148,7 +132,7 @@ function Mainbody() {
         </div>
         <div className="answer-2">
           <input
-            onChange={(e) => handleOptions(e)}
+            onChange={handleOptions}
             name="option3"
             value={displayQuestion?.answerList[2]?.body || ''}
             className="answer-input-2"
@@ -165,7 +149,7 @@ function Mainbody() {
           />
           <label htmlFor="option3"></label>
           <input
-            onChange={(e) => handleOptions(e)}
+            onChange={handleOptions}
             name="option4"
             value={displayQuestion?.answerList[3]?.body || ''}
             className="answer-input-4"

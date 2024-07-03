@@ -28,12 +28,9 @@ export default function Join() {
   }
 
   const handleAnswer = (answerIndex) => {
-    console.log(answerIndex)
-    console.log(answered)
     if (!answered) {
       setSelectedAnswerIndex(answerIndex)
       socket.emit('submitAnswer', room, questionIndex, answerIndex, (data) => {
-        console.log(data)
         if (data.isCorrect) {
           toast(`Correct! ${data.playerName} got it right`, {
             position: 'top-right',
@@ -75,7 +72,6 @@ export default function Join() {
       setInfo(true)
     })
     socket.on('newQuestion', ({ question }) => {
-      console.log(question)
       setQuestion(question.question)
       setOptions(question.answers) // Update options with data.answers
       setSeconds(question.timer)

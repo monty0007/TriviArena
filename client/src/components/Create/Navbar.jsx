@@ -3,7 +3,8 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Question } from '../../context/QuestionContext';
 import io from 'socket.io-client';
 import { updateQuiz, createQuiz } from '../Api/Api';
-import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 from uuid package // Assuming these are imported from correct path
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'react-toastify';
 
 export default function Navbar() {
   let navigate = useNavigate();
@@ -19,6 +20,15 @@ export default function Navbar() {
   } = useContext(Question);
 
   const handleSave = async () => {
+    // Check if the necessary fields are filled
+    const { answerTime, questionType, pointType, name } = quiz;
+    if (!answerTime || !questionType || !pointType || !name) {
+      toast.error("Please fill all the required fields", {
+        position: "top-center"
+      });
+      return;
+    }
+
     const updatedQuestions = mainQuestion.map((question) =>
       question.questionIndex === displayQuestion.questionIndex ? displayQuestion : question
     );
@@ -27,7 +37,6 @@ export default function Navbar() {
 
     const newQuizId = quiz._id || uuidv4();
 
-    
     console.log(newQuizId);
     const updatedQuiz = {
       ...quiz,
@@ -42,12 +51,20 @@ export default function Navbar() {
       if (quiz._id) {
         console.log("Updating quiz with id: ", quiz._id);
         await updateQuiz(quiz._id, updatedQuiz);
+        toast.success("Data Updated Successfully", {
+          position: "top-right"
+        });
       } else {
         console.log("Creating new quiz");
         await createQuiz(updatedQuiz);
+        toast.success("Data Saved Successfully", {
+          position: "top-right"
+        });
       }
-      console.log('Data sent successfully');
     } catch (error) {
+      toast.error("Error saving quiz. Please try again.", {
+        position: "top-center"
+      });
       console.error('Error saving quiz:', error);
     }
   };

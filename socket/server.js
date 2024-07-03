@@ -216,12 +216,12 @@ io.on('connection', (socket) => {
       io.to(room).emit('newQuestion', question)
 
       socket.broadcast.to(room).emit('newQuestion', { question })
-      console.log(rooms[room]);
+      // console.log(rooms[room]);
       setTimeout(() => {
         socket.broadcast.to(room).emit('answerResult', {
           playerName: 'No one',
           isCorrect: false,
-          correctAnswer: rooms[room].correctAnswer.isCorrect,
+          // correctAnswer: rooms[room].correctAnswer.isCorrect,
           scores: rooms[room].players.map((player) => ({
             name: player.name,
             score: player.score || 0,

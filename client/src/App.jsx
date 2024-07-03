@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import './App.css'
 import Mainpage from './components/Mainpage'
-import { Navigate, useNavigate, useRoutes } from 'react-router-dom'
+import { Navigate, useRoutes } from 'react-router-dom'
 import Create from './components/Create/Create'
 import Join from './components/Join/Join'
 import Login from './components/Authentication/Login'
@@ -14,7 +14,6 @@ import Host from './components/Host/Host'
 import AfterHost from './components/Host/AfterHost'
 
 function App() {
-  const navigate = useNavigate()
   const [user, setUser] = useState()
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
