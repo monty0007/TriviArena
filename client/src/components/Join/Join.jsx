@@ -12,13 +12,14 @@ export default function Join() {
   const [name, setName] = useState('')
   const [info, setInfo] = useState(false)
   const [question, setQuestion] = useState('')
-  const [questionIndex, setquestionIndex] = useState('')
+  const [questionIndex, setQuestionIndex] = useState('')
   const [options, setOptions] = useState([]) // Initialize options as an empty array
   const [scores, setScores] = useState([])
   const [seconds, setSeconds] = useState('')
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [winner, setWinner] = useState()
+  const [topPlayers, setTopPlayers] = useState([])
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -75,13 +76,14 @@ export default function Join() {
       setQuestion(question.question)
       setOptions(question.answers) // Update options with data.answers
       setSeconds(question.timer)
-      setquestionIndex(question.questionIndex)
+      setQuestionIndex(question.questionIndex)
       setAnswered(false)
       setSelectedAnswerIndex(null) // Clear selected answer index
     })
 
     socket.on('gameOver', (data) => {
       setWinner(data.winner)
+      setTopPlayers(data.topPlayers)
     })
     // Clean up socket listener
     return () => {
@@ -106,8 +108,20 @@ export default function Join() {
   if (winner) {
     return (
       <div className="winner-div">
-        <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
-        <img src="tro.jpg" alt="" />
+        <div className="winner">
+          <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
+          <img src="tro.jpg" alt="" />
+        </div>
+        <div className="leaderboard">
+          <h2>Leaderboard </h2>
+          <ul>
+            {topPlayers.map((player) => (
+              <li key={player.name}>
+                {player.position}) {player.name} : {player.score}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     )
   }
@@ -183,12 +197,6 @@ export default function Join() {
                   </li>
                 ))}
               </ul>
-              {/* {scores.map((player, index) => (
-                <p key={index}>
-                  {player.name} : {player.score}
-                </p>
-              ))} */}
-
               {scores
                 .filter((player) => player.name !== 'Host')
                 .map((player, index) => (

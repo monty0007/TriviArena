@@ -106,26 +106,81 @@ input[type=number]::-webkit-outer-spin-button {
     color: black;
 }
 
-.winner{
-    height: 100vh;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.winner {
+    /* height: 100vh; */
+    margin-top: 50px;
+    margin-bottom: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     font-size: 80px;
     font-family: inherit;
+    color: white; /* Kahoot green */
+    animation: fadeIn 2s ease-in-out;
 }
 
-.winner-div{
-    display: flex;
+.winner-div {
+    /* display: flex; */
+    height: 100vh;
     justify-content: center;
     align-items: center;
     text-align: center;
+    background-color: #25076b; /* Kahoot yellow */
+    padding: 20px;
+    border-radius: 10px;
+    animation: slideIn 1.5s ease-out;
 }
 
-.winner-div img{
+.winner-div img {
     height: 100px;
+    animation: fadeIn 3s ease-in-out;
 }
 
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+    background-color: #46178f; /* Kahoot blue */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    animation: fadeIn 2s ease-in-out;
+}
 
-  
+.leaderboard h2 {
+    font-size: 70px;
+    font-weight: bolder;
+    text-decoration: underline;
+    color: #e0613b; /* Kahoot orange */
+    animation: slideIn 2s ease-out;
+}
+
+.leaderboard ul{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

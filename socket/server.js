@@ -32,6 +32,8 @@ function generateUniqueSixDigitPin() {
 }
 
 function askNewQuestion(room) {
+  console.log("room",rooms[room]);
+  console.log("PLayers length= ",rooms[room].players.length);
   if (rooms[room].players.length === 0) {
     clearTimeout(rooms[room].questionTimeout)
     delete rooms[room]
@@ -148,65 +150,77 @@ io.on('connection', (socket) => {
   // })
 
   socket.on('submitAnswer', (room, questionIndex, answerIndex, callback) => {
-  if (!rooms[room]) {
-    console.error(`Room ${room} does not exist.`);
-    return;
-  }
-
-  const currentPlayer = rooms[room].players.find(
-    (player) => player.socketId === socket.id
-  );
-
-  if (!currentPlayer) {
-    console.error('Player not found in the room');
-    return;
-  }
-
-  const question = rooms[room].questions.find(
-    (q) => q.questionIndex === questionIndex
-  );
-
-  if (!question) {
-    console.error('Question not found');
-    return;
-  }
-
-  const correctAnswer = question.answerList.find((answer) => answer.isCorrect);
-  const submittedAnswer = question.answerList[answerIndex];
-
-  const isCorrect = submittedAnswer.isCorrect === correctAnswer.isCorrect;
-  console.log("isCorrect=", isCorrect);
-
-  if (isCorrect) {
-    currentPlayer.score += 1;
-  }
-
-  clearTimeout(rooms[room].questionTimeout);
-
-  callback({
-    playerName: currentPlayer.name,
-    isCorrect,
-    correctAnswer: correctAnswer.body,
-    scores: rooms[room].players.map((player) => ({
-      name: player.name,
-      score: player.score || 0,
-    })),
+    if (!rooms[room]) {
+      console.error(`Room ${room} does not exist.`);
+      return;
+    }
+  
+    const currentPlayer = rooms[room].players.find((player) => player.socketId === socket.id);
+  
+    if (!currentPlayer) {
+      console.error('Player not found in the room');
+      return;
+    }
+  
+    const question = rooms[room].questions.find((q) => q.questionIndex === questionIndex);
+  
+    if (!question) {
+      console.error('Question not found');
+      return;
+    }
+  
+    const correctAnswer = question.answerList.find((answer) => answer.isCorrect);
+    const submittedAnswer = question.answerList[answerIndex];
+  
+    const isCorrect = submittedAnswer.isCorrect === correctAnswer.isCorrect;
+    console.log('isCorrect=', isCorrect);
+  
+    if (isCorrect) {
+      currentPlayer.score += 1;
+    }
+  
+    clearTimeout(rooms[room].questionTimeout);
+  
+    callback({
+      playerName: currentPlayer.name,
+      isCorrect,
+      correctAnswer: correctAnswer.body,
+      scores: rooms[room].players.map((player) => ({
+        name: player.name,
+        score: player.score || 0,
+      })),
+    });
+  
+    const winningThreshold = 2; // Define your winning threshold here
+    const winner = rooms[room].players.find(
+      (player) => (player.score || 0) >= winningThreshold
+    );
+  
+    if (winner) {
+      // Sort players by score in descending order
+      const sortedPlayers = rooms[room].players
+        .filter(player => player.name !== 'Host') // Exclude host from ranking
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3); // Get top 3 players
+  
+      const topPlayers = sortedPlayers.map((player, index) => ({
+        name: player.name,
+        score: player.score,
+        position: index + 1
+      }));
+  
+      io.to(room).emit('gameOver', {
+        winner: winner.name,
+        topPlayers
+      });
+  
+      // Clean up the room
+      delete rooms[room];
+      activeRoomCodes.delete(room);
+    }
   });
-
-  const winningThreshold = 5;
-  const winner = rooms[room].players.find(
-    (player) => (player.score || 0) >= winningThreshold
-  );
-
-  if (winner) {
-    io.to(room).emit('gameOver', { winner: winner.name });
-    delete rooms[room];
-    activeRoomCodes.delete(room);
-  } 
-  // else {
-  //   askNewQuestion(room);
-  // }
-});
+  
+  
 
 
   socket.on('startGame', ({ room }) => {
@@ -222,10 +236,10 @@ io.on('connection', (socket) => {
           playerName: 'No one',
           isCorrect: false,
           // correctAnswer: rooms[room].correctAnswer.isCorrect,
-          scores: rooms[room].players.map((player) => ({
-            name: player.name,
-            score: player.score || 0,
-          })),
+          // scores: rooms[room].players.map((player) => ({
+          //   name: player.name,
+          //   score: player.score || 0,
+          // })),
         })
         StartAskingQuestion()
       }, question.timer * 1000)

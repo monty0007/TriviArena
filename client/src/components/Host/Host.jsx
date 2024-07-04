@@ -17,7 +17,10 @@ function Host() {
   const [answered, setAnswered] = useState(false);
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
   const [isQuestionActive, setIsQuestionActive] = useState(false); 
+  const [winner, setWinner] = useState(null); // State to track winner
+  const [topPlayers, setTopPlayers] = useState([]); // State for leaderboard
   const { setRoom, room, mainQuestion } = useContext(Question);
+  const navigate = useNavigate(); // Navigate hook from react-router-dom
 
   useEffect(() => {
     if (seconds === 0) return;
@@ -54,9 +57,36 @@ function Host() {
       setJoinedUsers(users); 
     });
 
+    socket.on('gameOver', ({ winner, topPlayers }) => {
+      setWinner(winner); // Set winner state
+      setTopPlayers(topPlayers); // Set top players state
+      // Redirect to winner page
+      if (winner) {
+        return (
+          <div className="winner-div">
+            <div className="winner">
+              <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
+              <img src="tro.jpg" alt="" />
+            </div>
+            <div className="leaderboard">
+              <h2>Leaderboard </h2>
+              <ul>
+                {topPlayers.map((player) => (
+                  <li key={player.name}>
+                    {player.position}) {player.name} : {player.score}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )
+      }
+    });
+
     return () => {
       socket.off('newQuestion');
       socket.off('userJoined');
+      socket.off('gameOver');
       socket.disconnect();
     };
   }, []);
@@ -65,7 +95,24 @@ function Host() {
     socket.emit('startGame', { room });
   };
 
-  return (
+  return winner ? (
+    <div className="winner-div">
+      <div className="winner">
+        <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
+        <img src="tro.jpg" alt="" />
+      </div>
+      <div className="leaderboard">
+        <h2>Leaderboard </h2>
+        <ul>
+          {topPlayers.map((player, index) => (
+            <li key={index}>
+              {player.position}) {player.name} : {player.score}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  ) : (
     <div className={`host ${isQuestionActive ? 'question-active' : ''}`}>
       <div className="code">
         <div className="wrap">
