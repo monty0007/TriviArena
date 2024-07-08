@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './Join.css'
 import io from 'socket.io-client'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { Question } from '../../context/QuestionContext'
 
-const socket = io('http://localhost:3000')
+const socket = io('https://socket-kahoot.onrender.com')
 
 export default function Join() {
   const [room, setRoom] = useState('')
@@ -17,6 +16,7 @@ export default function Join() {
   const [scores, setScores] = useState([])
   const [seconds, setSeconds] = useState('')
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null)
+  const [correctAnswerIndex, setCorrectAnswerIndex] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [winner, setWinner] = useState()
   const [topPlayers, setTopPlayers] = useState([])
@@ -24,7 +24,10 @@ export default function Join() {
   function handleSubmit(e) {
     e.preventDefault()
     if (name && room) {
-      setInfo(true)
+      socket.emit('joinRoom', { room, name }, ({ users, room }) => {
+        setRoom(room)
+        setInfo(true)
+      })
     }
   }
 
@@ -44,6 +47,20 @@ export default function Join() {
             pauseOnHover: true,
             theme: 'light',
           })
+          setCorrectAnswerIndex(answerIndex)
+        } else {
+          toast(`Incorrect! ${data.playerName} chose the wrong answer`, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            newestOnTop: false,
+            closeOnClick: true,
+            pauseOnFocusLoss: true,
+            draggable: true,
+            pauseOnHover: true,
+            theme: 'light',
+          })
+          setCorrectAnswerIndex(data.correctIndex) // Assuming server returns the correct answer index
         }
         setScores(data.scores)
       })
@@ -79,6 +96,7 @@ export default function Join() {
       setQuestionIndex(question.questionIndex)
       setAnswered(false)
       setSelectedAnswerIndex(null) // Clear selected answer index
+      setCorrectAnswerIndex(null)
     })
 
     socket.on('gameOver', (data) => {
@@ -110,7 +128,7 @@ export default function Join() {
       <div className="winner-div">
         <div className="winner">
           <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
-          <img src="tro.jpg" alt="" />
+          <img src="trophy.png" alt="" />
         </div>
         <div className="leaderboard">
           <h2>Leaderboard </h2>
@@ -155,15 +173,7 @@ export default function Join() {
               <div className="button">
                 <button
                   className="btn"
-                  onClick={() => {
-                    socket.emit(
-                      'joinRoom',
-                      { room, name },
-                      ({ users, room }) => {
-                        setRoom(room)
-                      }
-                    )
-                  }}
+                  type="submit"
                 >
                   Join
                 </button>
@@ -188,22 +198,25 @@ export default function Join() {
                     <button
                       onClick={() => handleAnswer(index)}
                       disabled={answered}
-                      className={`options ${
-                        selectedAnswerIndex === index ? 'selected' : ''
-                      }`}
+                      className={`options 
+                        ${selectedAnswerIndex === index ? 'selected' : ''}
+                        ${correctAnswerIndex === index ? 'correct' : ''}
+                        ${answered && correctAnswerIndex !== index && index === selectedAnswerIndex ? 'incorrect' : ''}
+                      `}
                     >
                       {answer}
                     </button>
                   </li>
                 ))}
               </ul>
-              {scores
+              {/* {scores
                 .filter((player) => player.name !== 'Host')
                 .map((player, index) => (
                   <p key={index}>
                     {player.name} : {player.score}
                   </p>
-                ))}
+                ))} */}
+
             </div>
           ) : (
             <p>Waiting For Host To Start</p>

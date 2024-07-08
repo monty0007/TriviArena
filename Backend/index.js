@@ -12,7 +12,12 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.use(cors());
+// Configure CORS
+const corsOptions = {
+    origin: '*', // Your frontend URL
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 
 const PORT = process.env.PORT || 5000;

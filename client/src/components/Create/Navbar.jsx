@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 export default function Navbar() {
   let navigate = useNavigate();
   let location = useLocation();
-  const socket = io('http://localhost:3000');
+  const socket = io('https://socket-kahoot.onrender.com');
 
   const {
     mainQuestion,

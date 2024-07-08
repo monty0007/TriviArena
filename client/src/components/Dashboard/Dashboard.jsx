@@ -106,7 +106,7 @@ function Dashboard() {
               </div>
                 <h2>Previous Quizzes : </h2>
               <div className="quiz-list">
-                {quizzes.length > 0 ? (
+                {quizzes && quizzes.length > 0 ? (
                   quizzes.map((quiz) => (
                     <div
                       key={quiz._id}

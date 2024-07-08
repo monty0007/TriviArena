@@ -184,3 +184,15 @@ input[type=number]::-webkit-outer-spin-button {
     justify-content: center;
     align-items: center;
 }
+
+
+.correct {
+    background-color: #2C9A6D;
+    color: white;
+  }
+  
+  .incorrect {
+    background-color: #740100;
+    color: white;
+  }
+  

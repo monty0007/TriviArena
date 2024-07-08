@@ -6,17 +6,17 @@ import io from 'socket.io-client';
 import { FiUser } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
 
-const socket = io('http://localhost:3000', { autoConnect: false });
+const socket = io('https://socket-kahoot.onrender.com', { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);
-  const [joinedUsers, setJoinedUsers] = useState([]); 
+  const [joinedUsers, setJoinedUsers] = useState([]);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState([]);
   const [seconds, setSeconds] = useState(10);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
-  const [isQuestionActive, setIsQuestionActive] = useState(false); 
+  const [isQuestionActive, setIsQuestionActive] = useState(false);
   const [winner, setWinner] = useState(null); // State to track winner
   const [topPlayers, setTopPlayers] = useState([]); // State for leaderboard
   const { setRoom, room, mainQuestion } = useContext(Question);
@@ -46,41 +46,36 @@ function Host() {
 
     socket.on('newQuestion', ({ question, answers, timer }) => {
       setQuestion(question);
-      setOptions(answers); 
+      setOptions(answers);
       setSeconds(timer);
       setAnswered(false);
       setSelectedAnswerIndex(null);
-      setIsQuestionActive(true); 
+      setIsQuestionActive(true);
     });
 
     socket.on('userJoined', ({ users }) => {
-      setJoinedUsers(users); 
+      setJoinedUsers(users);
     });
 
     socket.on('gameOver', ({ winner, topPlayers }) => {
       setWinner(winner); // Set winner state
       setTopPlayers(topPlayers); // Set top players state
-      // Redirect to winner page
-      if (winner) {
-        return (
-          <div className="winner-div">
-            <div className="winner">
-              <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
-              <img src="tro.jpg" alt="" />
-            </div>
-            <div className="leaderboard">
-              <h2>Leaderboard </h2>
-              <ul>
-                {topPlayers.map((player) => (
-                  <li key={player.name}>
-                    {player.position}) {player.name} : {player.score}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )
-      }
+      setIsQuestionActive(false); // Stop showing questions
+      setQuestion(''); // Clear current question
+      setOptions([]); // Clear options
+      setSeconds(10); // Reset timer if needed
+
+      // Redirect to winner page if needed
+      // navigate('/winner'); // Uncomment this line if you want to redirect
+
+      // Optionally, delete the room if needed
+      // socket.emit('deleteRoom', room); // Assuming you have a deleteRoom event in your server
+
+      // Clean up socket listeners and disconnect
+      socket.off('newQuestion');
+      socket.off('userJoined');
+      socket.off('gameOver');
+      socket.disconnect();
     });
 
     return () => {
@@ -99,7 +94,7 @@ function Host() {
     <div className="winner-div">
       <div className="winner">
         <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
-        <img src="tro.jpg" alt="" />
+        <img src="trophy.png" alt="" />
       </div>
       <div className="leaderboard">
         <h2>Leaderboard </h2>
@@ -143,12 +138,16 @@ function Host() {
 
         {!isQuestionActive && (
           <div className="start">
-            <button className="btn" onClick={startGame}>
+            <button 
+              className="btn" 
+              onClick={startGame} 
+              disabled={joinedUsers.filter((user) => user.name !== 'Host').length === 0}
+            >
               Start
             </button>
           </div>
         )}
-        
+
         {question && (
           <div className="question">
             <h2>{question}</h2>
