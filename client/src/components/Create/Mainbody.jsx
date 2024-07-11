@@ -4,7 +4,7 @@ import { Question } from '../../context/QuestionContext';
 function Mainbody() {
   const [uploading, setUploading] = useState(false);
   const [correctOption, setCorrectOption] = useState('');
-  
+
   const {
     mainQuestion,
     setHeadingQuestion,
@@ -15,11 +15,15 @@ function Mainbody() {
     setQuiz,
   } = useContext(Question);
 
+  // Update correctOption when displayQuestion changes
   useEffect(() => {
-    if (mainQuestion.length > 0 && !displayQuestion) {
-      setDisplayQuestion(mainQuestion[0]);
+    if (displayQuestion) {
+      const correctAnswer = displayQuestion.answerList.find((option) => option.isCorrect);
+      if (correctAnswer) {
+        setCorrectOption(correctAnswer.name);
+      }
     }
-  }, [displayQuestion, mainQuestion]);
+  }, [displayQuestion]);
 
   const handleInputQuestion = (e) => {
     const newQuestion = e.target.value;
@@ -35,17 +39,16 @@ function Mainbody() {
     const { name, value } = e.target;
     setDisplayQuestion((prev) => ({
       ...prev,
-      answerList: prev.answerList.map((option) => {
-        if (option.name === name) {
-          return { ...option, body: value, isCorrect: correctOption === name };
-        }
-        return option;
-      }),
+      answerList: prev.answerList.map((option) => ({
+        ...option,
+        body: option.name === name ? value : option.body,
+      })),
     }));
     updateMainQuestion({
-      answerList: displayQuestion.answerList.map((option) =>
-        option.name === name ? { ...option, body: value, isCorrect: correctOption === name } : option
-      ),
+      answerList: displayQuestion.answerList.map((option) => ({
+        ...option,
+        body: option.name === name ? value : option.body,
+      })),
     });
   };
 
@@ -54,17 +57,16 @@ function Mainbody() {
     setCorrectOption(name);
     setDisplayQuestion((prev) => ({
       ...prev,
-      answerList: prev.answerList.map((option) => {
-        if (option.name === name) {
-          return { ...option, isCorrect: true };
-        }
-        return { ...option, isCorrect: false };
-      }),
+      answerList: prev.answerList.map((option) => ({
+        ...option,
+        isCorrect: option.name === name,
+      })),
     }));
     updateMainQuestion({
-      answerList: displayQuestion.answerList.map((option) =>
-        option.name === name ? { ...option, isCorrect: true } : { ...option, isCorrect: false }
-      ),
+      answerList: displayQuestion.answerList.map((option) => ({
+        ...option,
+        isCorrect: option.name === name,
+      })),
     });
   };
 
@@ -98,7 +100,7 @@ function Mainbody() {
           <input
             onChange={handleOptions}
             name="option1"
-            value={displayQuestion?.answerList[0]?.body || ''}
+            value={displayQuestion?.answerList.find((option) => option.name === 'option1')?.body || ''}
             className="answer-input-1"
             type="text"
             placeholder="Add Answer 1"
@@ -115,7 +117,7 @@ function Mainbody() {
           <input
             onChange={handleOptions}
             name="option2"
-            value={displayQuestion?.answerList[1]?.body || ''}
+            value={displayQuestion?.answerList.find((option) => option.name === 'option2')?.body || ''}
             className="answer-input-3"
             type="text"
             placeholder="Add Answer 2"
@@ -134,7 +136,7 @@ function Mainbody() {
           <input
             onChange={handleOptions}
             name="option3"
-            value={displayQuestion?.answerList[2]?.body || ''}
+            value={displayQuestion?.answerList.find((option) => option.name === 'option3')?.body || ''}
             className="answer-input-2"
             type="text"
             placeholder="Add Answer 3"
@@ -151,7 +153,7 @@ function Mainbody() {
           <input
             onChange={handleOptions}
             name="option4"
-            value={displayQuestion?.answerList[3]?.body || ''}
+            value={displayQuestion?.answerList.find((option) => option.name === 'option4')?.body || ''}
             className="answer-input-4"
             type="text"
             placeholder="Add Answer 4"

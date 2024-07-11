@@ -133,3 +133,52 @@
   .host.question-active .players{
     height: 100vh;
   }
+
+  /* For questions */
+
+  .host .optione{
+    display: flex;
+    justify-content: center;
+    text-decoration: none;
+    list-style-type: none;
+  }
+  
+  .host .option-group{
+    padding: 20px;
+    /* margin: 10px; */
+  }
+
+
+  
+  .host .options{
+      border: 1px solid #E1DCF3;
+      cursor: pointer;
+      color: black;
+      background-color: #E1DCF3;
+      font-size: 20px;
+      padding: 20px 00px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* text-align: center; */
+      width: 1000px;
+      height: 60px;
+      margin: 10px;
+      border-radius: 5px;
+  }
+  
+  .host .options:hover{
+      background-color: #8a56d7;
+      color: black;
+  }
+
+  .host h2{
+    width: 100vw;
+  }
+
+  .host .question{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }

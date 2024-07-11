@@ -99,7 +99,7 @@ function Dashboard() {
               <div className="dashboard-button">
                 <img
                   className="plus"
-                  src="plus.jpg"
+                  src="pluss.png"
                   alt=""
                   onClick={handleCreate}
                 />

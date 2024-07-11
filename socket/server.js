@@ -188,7 +188,7 @@ io.on('connection', (socket) => {
       })),
     })
 
-    const winningThreshold = 2 // Define your winning threshold here
+    const winningThreshold = 100 // Define your winning threshold here
     const winner = rooms[room].players.find(
       (player) => (player.score || 0) >= winningThreshold
     )

@@ -5,6 +5,7 @@ import io from 'socket.io-client';
 import { updateQuiz, createQuiz } from '../Api/Api';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 export default function Navbar() {
   let navigate = useNavigate();
@@ -36,8 +37,6 @@ export default function Navbar() {
     setMainQuestion(updatedQuestions);
 
     const newQuizId = quiz._id || uuidv4();
-
-    console.log(newQuizId);
     const updatedQuiz = {
       ...quiz,
       _id: newQuizId,
@@ -48,18 +47,30 @@ export default function Navbar() {
     setQuiz(updatedQuiz);
 
     try {
-      if (quiz._id) {
-        console.log("Updating quiz with id: ", quiz._id);
-        await updateQuiz(quiz._id, updatedQuiz);
-        toast.success("Data Updated Successfully", {
-          position: "top-right"
-        });
-      } else {
-        console.log("Creating new quiz");
-        await createQuiz(updatedQuiz);
-        toast.success("Data Saved Successfully", {
-          position: "top-right"
-        });
+      const result = await Swal.fire({
+        title: "Do you want to save the changes?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        denyButtonText: `Don't save`
+      });
+
+      if (result.isConfirmed) {
+        if (quiz._id) {
+          console.log("Updating quiz with id: ", quiz._id);
+          await updateQuiz(quiz._id, updatedQuiz);
+          toast.success("Data Updated Successfully", {
+            position: "top-right"
+          });
+        } else {
+          console.log("Creating new quiz");
+          await createQuiz(updatedQuiz);
+          toast.success("Data Saved Successfully", {
+            position: "top-right"
+          });
+        }
+      } else if (result.isDenied) {
+        Swal.fire("Changes are not saved", "", "info");
       }
     } catch (error) {
       toast.error("Error saving quiz. Please try again.", {
@@ -81,7 +92,7 @@ export default function Navbar() {
     <div className='main'>
       <div className="title">
         <img className='img2' src="loading-xrc.png" alt="" />
-        <Link className='link' to='/'>XrCentral</Link>
+        <Link className='link' to='/'>XRCentral</Link>
       </div>
       <div className=''>
         <button className='navbar-btn' onClick={routeChange}>Exit</button>

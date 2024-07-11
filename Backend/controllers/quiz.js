@@ -209,12 +209,6 @@ const getQuestion = async (req, res) => {
 // Delete a question from a quiz
 const deleteQuestion = async (req, res) => {
     const { quizId, questionId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(quizId)) {
-        return res.status(404).send(`No quiz found with id: ${quizId}`);
-    }
-    if (!mongoose.Types.ObjectId.isValid(questionId)) {
-        return res.status(404).send(`No question found with id: ${questionId}`);
-    }
 
     try {
         const quiz = await Quiz.findById(quizId);
@@ -222,15 +216,19 @@ const deleteQuestion = async (req, res) => {
             return res.status(404).json({ message: "Quiz not found" });
         }
 
-        quiz.questionList = quiz.questionList.filter(q => q._id.toString() !== questionId);
+        // Filter out the question to delete from questionList
+ quiz.questionList.splice(questionId,1);
         quiz.numberOfQuestions -= 1;
 
+        // Save the updated quiz in the database
         await quiz.save();
-        res.json({ message: "Question deleted successfully" });
+
+        res.json({ message: "Question deleted successfully", updatedQuiz: quiz });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // Update a question in a quiz
 const updateQuestion = async (req, res) => {

@@ -5,7 +5,7 @@
 
 .container{
     /* display: flex; */
-    background-color: #1B1B1B;
+    background-color: #46178f;
     /* text-align: center; */
     height: 100%;
     min-width: 100%;
@@ -26,7 +26,7 @@
 .title h1{
     
     font-size: 55px;
-    color: #2EE59D;
+    color: white;
     margin-left: 10px;
 }
 
@@ -34,6 +34,7 @@
     display: flex;
     gap: 10px;
     margin-top: 15px;
+    /* color: #F01657; */
 }
 
 .btn{
