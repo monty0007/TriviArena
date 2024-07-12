@@ -3,8 +3,10 @@ import './Join.css';
 import io from 'socket.io-client';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Confetti from 'react-confetti';
 
-const socket = io('http://localhost:3000');
+const socket = io('https://socket-kahoot.onrender.com');
+// const socket = io('http://localhost:3000');
 
 export default function Join() {
   const [room, setRoom] = useState('');
@@ -126,12 +128,18 @@ export default function Join() {
   if (winner) {
     return (
       <div className="winner-div">
+         <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={true}
+          numberOfPieces={600}
+        />
         <div className="winner">
           <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
-          <img src="trophy.png" alt="" />
+          <img src="trophy.png" alt="trophy" />
         </div>
         <div className="leaderboard">
-          <h2>Leaderboard </h2>
+          <h2>Leaderboard</h2>
           <ul>
             {topPlayers.map((player) => (
               <li key={player.name}>
@@ -151,7 +159,7 @@ export default function Join() {
     <div className="main-join">
       {!info ? (
         <div className="join">
-          <img className="img1" src="loading-xrc.png" alt="" />
+          <img className="img1" src="loading-xrc.png" alt="loading" />
           <h1>XRCentral</h1>
           <form onSubmit={handleSubmit}>
             <div className="box">
@@ -184,7 +192,7 @@ export default function Join() {
       ) : (
         <div className="quiz-join">
           <h1>XRCentral Quiz</h1>
-          <p className="room-id">Room id : {room}</p>
+          <p className="room-id">Room Id : {room}</p>
           <ToastContainer />
           {question ? (
             <div className="quiz-div">
@@ -193,41 +201,40 @@ export default function Join() {
                 <p className="question-text">{question}</p>
               </div>
               <div className="optione">
-
-              <div className="option-group">
-                {firstHalfOptions.map((answer, index) => (
-                  <li key={index}>
-                    <button
-                      onClick={() => handleAnswer(index)}
-                      disabled={answered}
-                      className={`options 
-                        ${selectedAnswerIndex === index ? 'selected' : ''}
-                        ${correctAnswerIndex === index ? 'correct' : ''}
-                        ${answered && correctAnswerIndex !== index && index === selectedAnswerIndex ? 'incorrect' : ''}
-                      `}
-                    >
-                      {answer}
-                    </button>
-                  </li>
-                ))}
-              </div>
-              <div className="option-group">
-                {secondHalfOptions.map((answer, index) => (
-                  <li key={index + 2}>
-                    <button
-                      onClick={() => handleAnswer(index + 2)}
-                      disabled={answered}
-                      className={`options 
-                        ${selectedAnswerIndex === index + 2 ? 'selected' : ''}
-                        ${correctAnswerIndex === index + 2 ? 'correct' : ''}
-                        ${answered && correctAnswerIndex !== index + 2 && index + 2 === selectedAnswerIndex ? 'incorrect' : ''}
-                      `}
-                    >
-                      {answer}
-                    </button>
-                  </li>
-                ))}
-              </div>
+                <div className="option-group">
+                  {firstHalfOptions.map((answer, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={() => handleAnswer(index)}
+                        disabled={answered}
+                        className={`options 
+                          ${selectedAnswerIndex === index ? 'selected' : ''}
+                          ${correctAnswerIndex === index ? 'correct' : ''}
+                          ${answered && correctAnswerIndex !== index && index === selectedAnswerIndex ? 'incorrect' : ''}
+                        `}
+                      >
+                        {answer}
+                      </button>
+                    </li>
+                  ))}
+                </div>
+                <div className="option-group">
+                  {secondHalfOptions.map((answer, index) => (
+                    <li key={index + 2}>
+                      <button
+                        onClick={() => handleAnswer(index + 2)}
+                        disabled={answered}
+                        className={`options 
+                          ${selectedAnswerIndex === index + 2 ? 'selected' : ''}
+                          ${correctAnswerIndex === index + 2 ? 'correct' : ''}
+                          ${answered && correctAnswerIndex !== index + 2 && index + 2 === selectedAnswerIndex ? 'incorrect' : ''}
+                        `}
+                      >
+                        {answer}
+                      </button>
+                    </li>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
@@ -238,3 +245,5 @@ export default function Join() {
     </div>
   );
 }
+
+

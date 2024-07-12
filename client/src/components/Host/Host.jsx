@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { FiUser } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
+import Confetti from 'react-confetti';
 
-const socket = io('http://localhost:3000', { autoConnect: false });
+const socket = io('https://socket-kahoot.onrender.com', { autoConnect: false });
+// const socket = io('http://localhost:3000', { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);
@@ -93,6 +95,12 @@ function Host() {
   return winner ? (
     <div className="winner-div">
       <div className="winner">
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={true}
+          numberOfPieces={600}
+        />
         <h1 className="winner">Winner is "{winner.toUpperCase()}"</h1>
         <img src="trophy.png" alt="" />
       </div>

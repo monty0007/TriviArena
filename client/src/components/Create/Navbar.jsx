@@ -94,8 +94,7 @@ export default function Navbar() {
         <img className='img2' src="loading-xrc.png" alt="" />
         <Link className='link' to='/'>XRCentral</Link>
       </div>
-      <div className=''>
-        <button className='navbar-btn' onClick={routeChange}>Exit</button>
+      <div>
         {location.pathname === '/create' && (
           <>
             <button className='navbar-btn' onClick={handleSave}>Save</button>
@@ -103,10 +102,13 @@ export default function Navbar() {
           </>
         )}
       </div>
-      <div className='search'>
+      <div>
+        <button className='navbar-btn' onClick={routeChange}>Exit</button>
+      </div>
+      {/* <div className='search'>
         <input className='input2' type="text" placeholder='Enter Game Title' />
         <button className='navbar-btn'>Search</button>
-      </div>
+      </div> */}
     </div>
   );
 }
