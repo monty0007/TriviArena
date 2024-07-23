@@ -7,8 +7,8 @@ import { FiUser } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
 import Confetti from 'react-confetti';
 
-const socket = io('https://socket-kahoot.onrender.com', { autoConnect: false });
-// const socket = io('http://localhost:3000', { autoConnect: false });
+// const socket = io('https://socket-kahoot.onrender.com', { autoConnect: false });
+const socket = io('http://localhost:3000', { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);

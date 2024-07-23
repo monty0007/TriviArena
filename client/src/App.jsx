@@ -12,6 +12,7 @@ import { auth } from './components/Firebase/Firebase'
 import 'react-toastify/dist/ReactToastify.css'
 import Host from './components/Host/Host'
 import AfterHost from './components/Host/AfterHost'
+import Answers from './components/Answers/Answers'
 
 function App() {
   const [user, setUser] = useState()
@@ -54,6 +55,9 @@ function App() {
     {
       path: '/display',
       element: <AfterHost />,
+    },{
+      path:'/answers',
+      element:<Answers/>
     }
   ]
 

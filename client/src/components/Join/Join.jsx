@@ -4,11 +4,13 @@ import io from 'socket.io-client';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
+import { useNavigate } from 'react-router-dom';
 
-const socket = io('https://socket-kahoot.onrender.com');
-// const socket = io('http://localhost:3000');
+// const socket = io('https://socket-kahoot.onrender.com');
+const socket = io('http://localhost:3000');
 
 export default function Join() {
+  const navigate=useNavigate()
   const [room, setRoom] = useState('');
   const [name, setName] = useState('');
   const [info, setInfo] = useState(false);
@@ -32,6 +34,11 @@ export default function Join() {
       });
     }
   }
+
+  const handleAnswers=()=>{
+    navigate('/answers')
+  }
+
 
   const handleAnswer = (answerIndex) => {
     if (!answered) {
@@ -148,6 +155,7 @@ export default function Join() {
             ))}
           </ul>
         </div>
+          <button className='btn' onClick={handleAnswers}>Answers</button>
       </div>
     );
   }

@@ -241,6 +241,20 @@ input[type=number]::-webkit-outer-spin-button {
     background-color: #e41f1c !important; /* Ensure highest specificity */
     color: white !important;
   }
+
+  .winner-div .btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: red;
+    position: absolute;
+    right: 20px;
+    bottom: 40px;
+  }
+
+  .winner-div .btn:hover{
+    background-color: rgb(147, 49, 49);
+  }
   
 
 @media (max-width: 700px) {

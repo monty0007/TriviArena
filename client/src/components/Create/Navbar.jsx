@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 export default function Navbar() {
   let navigate = useNavigate();
   let location = useLocation();
-  const socket = io('https://socket-kahoot.onrender.com');
+  // const socket = io('https://socket-kahoot.onrender.com');
 
   const {
     mainQuestion,

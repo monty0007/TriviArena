@@ -4,7 +4,7 @@ import { Question } from '../../context/QuestionContext';
 function Mainbody() {
   const [uploading, setUploading] = useState(false);
   const [correctOption, setCorrectOption] = useState('');
-
+  console.log(correctOption);
   const {
     mainQuestion,
     setHeadingQuestion,
@@ -19,8 +19,11 @@ function Mainbody() {
   useEffect(() => {
     if (displayQuestion) {
       const correctAnswer = displayQuestion.answerList.find((option) => option.isCorrect);
+      console.log(correctAnswer);
       if (correctAnswer) {
         setCorrectOption(correctAnswer.name);
+      }else{
+        setCorrectOption('')
       }
     }
   }, [displayQuestion]);
@@ -104,6 +107,7 @@ function Mainbody() {
             className="answer-input-1"
             type="text"
             placeholder="Add Answer 1"
+            size={20}
           />
           <input
             type="radio"

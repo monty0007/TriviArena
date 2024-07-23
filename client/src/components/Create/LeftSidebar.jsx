@@ -114,7 +114,7 @@ function LeftSidebar() {
       });
     }
   };
-
+  console.log(mainQuestion);
   return (
     <div className="sidebar">
       <input
