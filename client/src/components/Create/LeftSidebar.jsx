@@ -127,7 +127,7 @@ function LeftSidebar() {
         <div
           key={q.questionIndex}
           onClick={() => handleSlide(q)}
-          className={`quiz ${q.questionIndex === selectedQuestionId ? 'selected' : ''}`}
+          className={`quiz-wrapper ${q.questionIndex === selectedQuestionId ? 'selected' : ''}`}
         >
           <div className="quiz">
             <div className="quiz-name">
