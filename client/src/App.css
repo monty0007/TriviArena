@@ -1,0 +1,78 @@
+
+
+@media screen and (max-width:800px) {
+    .bodie{
+        flex-direction: column !important;
+        width: 100%;
+    }
+    .sidebar{
+        height: fit-content !important;
+        width: 100% !important;
+        border: 0px !important;
+        padding: 24px;
+    }
+    .selected{
+        width: 80% !important;
+    }
+    .quiz{
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+      justify-content: space-evenly;
+    }
+    .quiz-name{
+        flex-direction: column;
+        height: 100% !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+    .mainbody{
+        width: 100% !important;
+        height: fit-content !important;
+        padding: 32px 16px !important;
+        display: flex;
+        flex-direction: column;
+        gap: 24px ;
+    }
+    .quiz-img{
+        display: none !important;
+    }
+    .main-bodyinput{
+        margin: 0% !important;
+        padding: 8px ;
+    }   
+    .answer{
+        margin: 0% !important;
+        justify-content: center !important ;
+        align-items: center !important;
+    }
+    .answer-1, .answer-2{
+        width: 100% !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .answer-input-1, .answer-input-2, .answer-input-3, .answer-input-4{
+        padding: 8px !important;
+        width: 85% !important;
+    }
+    .answer-1 label{
+        width: fit-content !important;
+        margin: 0%;
+    }
+    .ans-top{
+        display: flex;
+        justify-content: center;
+    }
+    .rightSidebar{
+        padding: 24px !important;
+    }
+
+}
+
+@media screen and (max-width:500px){
+    .selected{
+        width: 100% !important;
+    }
+}
