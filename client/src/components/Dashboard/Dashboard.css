@@ -104,6 +104,17 @@
 
 /* Media query for devices with screen width under 700px */
 @media (max-width: 700px) {
+
+  .center {
+    text-align: start;
+    margin-left: 10px;
+  }
+
+  .dashboard h3{
+    font-size: 18px;
+    padding-top: 10px;
+  }
+
   .dashboard .quiz-list {
     display: flex;
     flex-direction: column;
@@ -135,6 +146,6 @@
   }
 
   .dashboard {
-    margin-top: 20px;
+    /* margin-top: 20px; */
   }
 }

@@ -6,8 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
 
-// const socket = io('https://socket-kahoot.onrender.com');
-const socket = io('http://localhost:3000');
+const socket = io('https://socket-kahoot.onrender.com');
+// const socket = io('http://localhost:3000');
 
 export default function Join() {
   const navigate=useNavigate()
