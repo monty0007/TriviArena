@@ -47,10 +47,18 @@ function SignInWithGoogle() {
 
   return (
     <div>
-        <p>--Or continue with--</p>
-        <div className='google-logo' onClick={googleLogin}>
-            <img className='google-image' src="google.png"/>
+        {/* <p>--Or continue with--</p> */}
+        <div className="google" onClick={googleLogin}>
+          <div className="ime">
+            <img src="icon.png" alt="" />
+          </div>
+          <div className="text">
+            Login With Google
+          </div>
         </div>
+        {/* <div className='google-logo' onClick={googleLogin}>
+            <img className='google-image' src="google.png"/>
+        </div> */}
     </div>
   )
 }

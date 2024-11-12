@@ -142,13 +142,13 @@ function LeftSidebar() {
               <p className="question-p">{'Question'}</p>
               <div className="timer-image">
                 <div className="timer">
-                  <img
+                  {/* <img
                     className="img3"
                     width={50}
                     height={50}
                     src={`/${q.image}`}
                     alt=""
-                  />
+                  /> */}
                   <div className="text-block">
                     <p>20</p>
                   </div>

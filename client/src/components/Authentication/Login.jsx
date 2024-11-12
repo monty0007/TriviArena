@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { auth } from '../Firebase/Firebase'
 import { useNavigate } from 'react-router-dom'
 import SignInWithGoogle from './SignInWithGoogle'
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -15,56 +15,67 @@ function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       console.log('User logged in Succesfully')
-      toast.success("User logged in Successfully",{
-        position: "top-center"
-      });
+      toast.success('User logged in Successfully', {
+        position: 'top-center',
+      })
       navigate('/dashboard')
     } catch (error) {
       console.log(error.message)
-      toast.error("Login failed: " + error.message),{
-        position: "top-center"
-      };
+      toast.error('Login failed: ' + error.message),
+        {
+          position: 'top-center',
+        }
     }
   }
 
   return (
     <div className="form-container sign-in-container">
-      <form className='login-form' onSubmit={handleSubmit}>
-        <h3>Login</h3>
+      {/* <div className="banner"> */}
+        {/* <img src="quiz.png" alt="" /> */}
+      {/* </div> */}
+      {/* <div className="details"> */}
+        <form className="login-form" onSubmit={handleSubmit}>
+          <h3>Welcome Back!</h3>
+          <p>Continue with Google or enter your details.</p>
 
-        <div className="mb-3">
-          <label>Email address</label>
-          <input
-            type="email"
-            className="form-control"
-            placeholder="Enter email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
 
-        <div className="mb-3">
-          <label>Password</label>
-          <input
-            type="password"
-            className="form-control"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+          <SignInWithGoogle />
 
-        <div className="d-grid">
-          <button type="submit" className="btn btn-primary">
-            Submit
-          </button>
-        </div>
-        <p className="forgot-password">
-          New user ? <br></br> <a href="/register">Register Here</a>
-        </p>
-        <SignInWithGoogle/>
-      </form>
-    </div>
+          <div className="text">
+            {/* <label>Email address</label> */}
+            <p>Username</p>
+            <input
+              type="email"
+              className="form-control"
+              placeholder="example@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="text">
+            {/* <label>Password</label> */}
+            <p>Password</p>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="******"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="d-grid">
+            <button type="submit" className="button">
+              Login
+            </button>
+          </div>
+          <p className="forgot-password">
+            Don't have an account? <a href="/register">Register Here</a>
+          </p>
+        </form>
+      </div>
+    // </div>
   )
 }
 

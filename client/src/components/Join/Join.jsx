@@ -167,8 +167,8 @@ export default function Join() {
     <div className="main-join">
       {!info ? (
         <div className="join">
-          <img className="img1" src="loading-xrc.png" alt="loading" />
-          <h1>XRCentral</h1>
+          <img className="img1" src="quiz.png" alt="loading" />
+          {/* <h1>XRCentral</h1> */}
           <form onSubmit={handleSubmit}>
             <div className="box">
               <div className="pin">

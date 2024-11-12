@@ -1,5 +1,5 @@
 .img1{
-    height: 70px;
+    height: 200px;
 }
 
 
@@ -56,8 +56,8 @@
   }
 
 .btn:hover {
-  background-color: #2EE59D;
-  box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4);
+  background-color: #700de2;
+  box-shadow: 0px 15px 20px rgba(138, 46, 229, 0.4);
   color: #fff;
   transform: translateY(-7px);
 }

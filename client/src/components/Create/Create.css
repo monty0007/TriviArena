@@ -2,7 +2,11 @@
     display: flex;
 }
 
-
+.rainbow-line {
+  width: 100%;
+  /* height: 1.5px; */
+  background: white;
+}
 
 /* Navbar */
 
@@ -12,8 +16,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid black;
+  /* border-bottom: 1px solid black; */
   padding: 5px;
+  background-color: #00e7b5;
 }
 
 .main .link {
@@ -32,8 +37,8 @@
 }
 
 .main .img2 {
-  height: 35px;
-  background-color: black;
+  height: 50px;
+  /* background-color: black; */
   border-radius: 5px;
   padding: 5px;
   margin-right: 10px;
@@ -82,6 +87,18 @@
 
 /* Media Query for Mobile Devices */
 @media (max-width: 600px) {
+
+  .sidebar {
+    /* height: 93vh; */
+    /* width: 15%; */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-right: 1px solid black;
+    overflow-x: scroll;
+    /* background-image: url(https://img.freepik.com/free-vector/modern-question-mark-pattern-background-help-support_1017-50408.jpg?t=st=1731239537~exp=1731243137~hmac=4dc7b804b582d624a876f7c294389278776975099be631e6ebcd6989eca1cadf&w=740); */
+  }
+
   .main {
     /* flex-direction: column; */
     align-items: flex-start;
@@ -136,6 +153,7 @@
   align-items: center;
   border-right: 1px solid black;
   overflow-y: scroll;
+  /* background-image: url(https://img.freepik.com/free-vector/modern-question-mark-pattern-background-help-support_1017-50408.jpg?t=st=1731239537~exp=1731243137~hmac=4dc7b804b582d624a876f7c294389278776975099be631e6ebcd6989eca1cadf&w=740); */
 }
 
 /* Styles for a single input field */
@@ -190,11 +208,13 @@
 }
 
 .sidebar .question {
+  background-color: white;
   color: grey;
   text-align: center;
   border: 3px solid grey;
   border-radius: 5px;
   cursor: pointer;
+  padding: 2px 20px;
   /* margin-left: 20px; */
   /* rgb(49, 147, 221) */
 }
@@ -310,7 +330,7 @@
 
 .answer{
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
     /* margin: 100px; */
     margin-left: 30px;
     font-size: 10px;

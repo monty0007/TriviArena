@@ -91,7 +91,7 @@ function Dashboard() {
             <div className="center">
               <h3>
                 Welcome {userDetails.firstName || userDetails.displayName}{' '}
-                {userDetails.lastName} 🙏🙏
+                {userDetails.lastName},
               </h3>
               {/* Additional user details can be displayed here if needed */}
             </div>

@@ -2,7 +2,26 @@
   display: flex;
   flex-direction: column;
   text-align: center;
-  margin-top: 40px;
+  /* margin-top: 40px; */
+  background-image:url(https://img.freepik.com/free-vector/modern-question-mark-pattern-background-help-support_1017-50408.jpg?t=st=1731401342~exp=1731404942~hmac=ae6fdce653ab0791b0d59d7dc1e9931d90ada3a0c03c1363be3301463a096347&w=740) ;
+  opacity: 0.8;
+  height: 100vh;
+  /* background-repeat: no-repeat; */
+  /* background-size: cover; */
+}
+
+.dashboard h2{
+  display: flex;
+  padding-left: 10px;
+  color: white;
+}
+
+.dashboard h3{
+  /* margin-top: 20px; */
+  padding-top: 30px;
+  font-weight: 600;
+  font-size: 40px;
+  color: white
 }
 
 .top-right {
@@ -12,11 +31,12 @@
 }
 
 .center {
-  text-align: center;
+  text-align: start;
+  margin-left: 70px;
 }
 
 .dashboard-button {
-  margin-top: 20px; /* Adjust margin as needed */
+  /* margin-top: 20px;  */
 }
 
 .plus {
@@ -24,19 +44,24 @@
   cursor: pointer;
 }
 
-.btn {
+.dashboard .btn {
   /* Adjust button styles */
-  background-color: #007bff;
-  color: #fff;
+  background-color: #31ea9a;
+  color: white;
+  font-weight: 500;
+  font-size: 15px;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.btn:hover {
-  background-color: #0056b3;
+.dashboard .btn:hover {
+  border: 1px solid white;
+  background-color: #14a765;
+  box-shadow: 0px 15px 20px #14a765;
 }
+
 
 .quiz-list {
   display: grid;
@@ -48,12 +73,14 @@
 }
 
 .quiz-item {
-  background-color: #831ee1;
+  background-color: rgba(222, 215, 228, 0.5); /* 0.7 makes it 70% opaque */
   padding: 50px;
-  border-radius: 4px;
+  border-radius: 10px;
   transition: transform 0.2s ease-in-out;
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.401);
 }
+
 
 .quiz-item:hover {
   transform: translateY(-5px);
@@ -72,7 +99,6 @@
 }
 
 .allquiz {
-  height: 100vh;
   flex-wrap: wrap;
 }
 
@@ -99,10 +125,6 @@
     /* margin-top: 20px; */
     right: 37%;
     top: 0;
-  }
-
-  .plus {
-    height: 100px;
   }
 
   .dashboard .btn {

@@ -73,8 +73,8 @@ function Register() {
       <form className="login-form" onSubmit={handleRegister}>
         <h3>Sign Up</h3>
 
-        <div className="mb-3">
-          <label>First name</label>
+        <div className="text">
+          <p>First name</p>
           <input
             type="text"
             className="form-control"
@@ -85,8 +85,8 @@ function Register() {
           />
         </div>
 
-        <div className="mb-3">
-          <label>Last name</label>
+        <div className="text">
+          <p>Last name</p>
           <input
             type="text"
             className="form-control"
@@ -96,8 +96,8 @@ function Register() {
           />
         </div>
 
-        <div className="mb-3">
-          <label>Email address</label>
+        <div className="text">
+          <p>Email address</p>
           <input
             type="email"
             className="form-control"
@@ -108,8 +108,8 @@ function Register() {
           />
         </div>
 
-        <div className="mb-3">
-          <label>Password</label>
+        <div className="text">
+          <p>Password</p>
           <input
             type="password"
             className="form-control"
@@ -121,12 +121,12 @@ function Register() {
         </div>
 
         <div className="d-grid">
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="button">
             Sign Up
           </button>
         </div>
         <p className="forgot-password">
-          Already registered?<br /> <a href="/login">Login</a>
+          Already registered? <a href="/login">Login</a>
         </p>
       </form>
     </div>

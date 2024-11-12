@@ -7,8 +7,8 @@ function Mainpage() {
   return (
       <div className="container">
         <div className='title'>
-            <img className='img1' src="loading-xrc.png" alt="" />
-            <h1>XRCentral</h1>
+            {/* <h1>TriviArena</h1> */}
+            <img className='img1' src="quiz.png" alt="" />
         </div>
         <div className="button">
           <Link to={'/login'}>
