@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import './App.css'
+
 import Mainpage from './components/Mainpage'
 import { Navigate, useRoutes } from 'react-router-dom'
 import Create from './components/Create/Create'
@@ -55,9 +55,9 @@ function App() {
     {
       path: '/display',
       element: <AfterHost />,
-    },{
-      path:'/answers',
-      element:<Answers/>
+    }, {
+      path: '/answers',
+      element: <Answers />
     }
   ]
 
@@ -76,6 +76,7 @@ function App() {
         draggable
         pauseOnHover
         theme="light"
+        toastClassName="shadow-lg"
       />
     </>
   )

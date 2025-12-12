@@ -7,10 +7,10 @@ import QuestionContext from './context/QuestionContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   // <React.StrictMode>
-    <QuestionContext>
+  <QuestionContext>
     <BrowserRouter>
-        <App />
+      <App />
     </BrowserRouter>
-    </QuestionContext>
+  </QuestionContext>
   // </React.StrictMode>
 )

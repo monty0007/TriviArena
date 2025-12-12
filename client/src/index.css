@@ -1,8 +1,98 @@
-html, body,#root{
-  padding: 0;
-  margin: 0;
-  height: 100%;
-  width: 100%;
-  font-family: 'Montserrat', sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary text-white font-sans;
+  }
 }
 
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* React Toastify Custom Theme */
+:root {
+  --toastify-color-light: #ffffff;
+  --toastify-color-dark: #121212;
+  --toastify-color-info: #3498db;
+  --toastify-color-success: #22c55e;
+  --toastify-color-warning: #f1c40f;
+  --toastify-color-error: #ef4444;
+  --toastify-text-color-light: #1f2937;
+  --toastify-font-family: 'Montserrat', sans-serif;
+  --toastify-toast-width: 380px;
+  --toastify-toast-border-radius: 12px;
+}
+
+.Toastify__toast-container {
+  padding: 16px;
+}
+
+.Toastify__toast {
+  position: relative;
+  min-height: 64px;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  padding: 8px 16px;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 600 !important;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.Toastify__toast--success {
+  background: #ffffff !important;
+  color: #15803d !important;
+  border-left: 8px solid #22c55e !important;
+}
+
+.Toastify__toast--error {
+  background: #ffffff !important;
+  color: #b91c1c !important;
+  border-left: 8px solid #ef4444 !important;
+}
+
+.Toastify__toast--info {
+  background: #ffffff !important;
+  color: #0369a1 !important;
+  border-left: 8px solid #3b82f6 !important;
+}
+
+.Toastify__toast--warning {
+  background: #ffffff !important;
+  color: #a16207 !important;
+  border-left: 8px solid #eab308 !important;
+}
+
+.Toastify__progress-bar {
+  opacity: 0.3 !important;
+  height: 4px !important;
+}
+
+.Toastify__close-button {
+  color: #9ca3af !important;
+  opacity: 0.7 !important;
+}
+
+.Toastify__close-button:hover {
+  color: #4b5563 !important;
+  opacity: 1 !important;
+}

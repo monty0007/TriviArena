@@ -9,29 +9,29 @@ export default function QuestionContext(props) {
       backgroundImage: '',
       question: '',
       //update answerlist in backend
-      answerList:[
-      {
-        name: 'option1',
-        body: '',
-        isCorrect: false,
-      },
-      {
-        name: 'option2',
-        body: '',
-        isCorrect: false,
-      },
-      {
-        name: 'option3',
-        body: '',
-        isCorrect: false,
-      },
-      {
-        name: 'option4',
-        body: '',
-        isCorrect: false,
-      },
+      answerList: [
+        {
+          name: 'option1',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option2',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option3',
+          body: '',
+          isCorrect: false,
+        },
+        {
+          name: 'option4',
+          body: '',
+          isCorrect: false,
+        },
       ]
-  }])
+    }])
   const [headingQuestion, setHeadingQuestion] = useState('')
   const [saveQuestion, setSaveQuestion] = useState({})
   const [displayQuestion, setDisplayQuestion] = useState({
@@ -67,14 +67,14 @@ export default function QuestionContext(props) {
   const [quiz, setQuiz] = useState({
     name: '',
     creatorId: '',
-    creatorName:'',
+    creatorName: '',
     numberOfQuestions: 0,
     // isPublic: false,
     // dateCreated: '',
-    questionType: '',
-    pointType: '',
-    answerTime: 0,
-    id:'',
+    questionType: 'Quiz',
+    pointType: 'Standard',
+    answerTime: 10,
+    id: '',
     questionList: [
       {
         backgroundImage: '',
@@ -92,6 +92,9 @@ export default function QuestionContext(props) {
     ],
   })
 
+  // Validation State
+  const [validationError, setValidationError] = useState({})
+
 
   return (
     <Question.Provider
@@ -108,6 +111,8 @@ export default function QuestionContext(props) {
         setRoom,
         quiz,
         setQuiz,
+        validationError,
+        setValidationError
       }}
     >
       {props.children}
