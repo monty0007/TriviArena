@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
 
-const socket = io('http://localhost:3000');
+const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000');
 
 export default function Join() {
   const navigate = useNavigate();

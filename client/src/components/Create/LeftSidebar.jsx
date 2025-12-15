@@ -83,7 +83,7 @@ function LeftSidebar() {
         icon: 'error',
         title: "Can't delete only question",
         text: 'You need at least one question.',
-        text: 'You need at least one question.',
+
         confirmButtonColor: '#3b82f6', // blue-500
       });
     } else {
