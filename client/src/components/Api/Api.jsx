@@ -20,14 +20,8 @@ import { auth } from '../Firebase/Firebase';
 const getAuthHeader = async () => {
   const user = auth.currentUser;
   if (user) {
-    // If using Firebase Auth, we usually send the ID token
-    // But verify if backend expects "Authorization: Bearer <token>"
-    // For now, assuming standard Bearer pattern
-    // IF your backend just uses the uid in body, this might be optional, 
-    // but "getAuthHeader" usage implies headers.
-    // Based on previous code it seemed undefined. 
-    // Let's safe guard it.
-    return {};
+    const token = await user.getIdToken();
+    return { "Authorization": `Bearer ${token}` };
   }
   return {};
 };

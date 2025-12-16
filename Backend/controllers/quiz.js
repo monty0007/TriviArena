@@ -3,16 +3,16 @@ const Quiz = require('../models/quiz');
 
 // Create a new quiz
 const createQuiz = async (req, res) => {
-    const { name, backgroundImage, description, creatorName, creatorId, pointsPerQuestion, isPublic, tags, likesCount, questionList,  questionType,
+    const { name, backgroundImage, description, creatorName, creatorId, pointsPerQuestion, isPublic, tags, likesCount, questionList, questionType,
         pointType,
         answerTime,
-        numberOfQuestions, 
+        numberOfQuestions,
         _id
         // isPublic,
-     } = req.body;
+    } = req.body;
 
     // if (!creatorId) {
-        // return res.status(400).json({ message: 'Creator ID is required' });
+    // return res.status(400).json({ message: 'Creator ID is required' });
     // }
 
     const quiz = new Quiz({
@@ -101,9 +101,9 @@ const getQuiz = async (req, res) => {
 // Delete a quiz by ID
 const deleteQuiz = async (req, res) => {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).send(`No quiz found with id: ${id}`);
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //     return res.status(404).send(`No quiz found with id: ${id}`);
+    // }
 
     try {
         await Quiz.findByIdAndDelete(id);
@@ -133,7 +133,7 @@ const updateQuiz = async (req, res) => {
         const updatedQuiz = await Quiz.findByIdAndUpdate(id, quiz, { new: true });
         if (!updatedQuiz) {
             return res.status(404).json({ message: `No quiz found with id: ${id}` });
-          }
+        }
         res.json(updatedQuiz);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -160,7 +160,7 @@ const addQuestion = async (req, res) => {
             answerList,
             correctAnswersList
         });
-        
+
         // Update numberOfQuestions
         quiz.numberOfQuestions += 1;
 
@@ -217,7 +217,7 @@ const deleteQuestion = async (req, res) => {
         }
 
         // Filter out the question to delete from questionList
- quiz.questionList.splice(questionId,1);
+        quiz.questionList.splice(questionId, 1);
         quiz.numberOfQuestions -= 1;
 
         // Save the updated quiz in the database
@@ -233,12 +233,12 @@ const deleteQuestion = async (req, res) => {
 // Update a question in a quiz
 const updateQuestion = async (req, res) => {
     const { quizId, questionId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(quizId)) {
-        return res.status(404).send(`No quiz found with id: ${quizId}`);
-    }
-    if (!mongoose.Types.ObjectId.isValid(questionId)) {
-        return res.status(404).send(`No question found with id: ${questionId}`);
-    }
+    // if (!mongoose.Types.ObjectId.isValid(quizId)) {
+    //     return res.status(404).send(`No quiz found with id: ${quizId}`);
+    // }
+    // if (!mongoose.Types.ObjectId.isValid(questionId)) {
+    //     return res.status(404).send(`No question found with id: ${questionId}`);
+    // }
 
     const { questionType, question, pointType, answerTime, answerList, correctAnswersList } = req.body;
 
