@@ -132,7 +132,7 @@ function LeftSidebar() {
   }, [displayQuestion])
 
   return (
-    <div className="w-full md:w-[22%] h-full bg-slate-50 border-r border-slate-200 flex flex-col shadow-inner relative">
+    <div className="w-full h-full bg-slate-50 border-r border-slate-200 flex flex-col shadow-inner relative">
       {/* ... header ... */}
 
       {/* --- Quiz Details Header --- */}
@@ -143,15 +143,15 @@ function LeftSidebar() {
           </label>
           <input
             type="text"
-            placeholder="Untitled Quiz"
+            placeholder={validationError?.name ? "Required!" : "Untitled Quiz"}
             value={quiz.name}
             onChange={handleQuizName}
-            className="w-full text-xl font-extrabold text-slate-800 placeholder-slate-300 border-b-2 border-slate-100 focus:border-blue-500 bg-transparent py-1 px-1 transition-all outline-none"
+            className={`w-full text-xl font-extrabold text-slate-800 bg-transparent border-b-2 bg-transparent py-1 px-1 transition-all outline-none ${validationError?.name ? 'border-red-500 placeholder-red-400' : 'border-slate-100 placeholder-slate-300 focus:border-blue-500'}`}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+          <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ml-1 ${validationError?.description ? 'text-red-500' : 'text-slate-400'}`}>
             Description
           </label>
           <textarea
@@ -159,7 +159,7 @@ function LeftSidebar() {
             value={quiz.description || ''}
             onChange={handleQuizDescription}
             rows={2}
-            className="w-full text-sm text-slate-600 placeholder-slate-300 bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all resize-none"
+            className={`w-full text-sm text-slate-600 bg-slate-50 border rounded-lg p-3 outline-none transition-all resize-none ${validationError?.description ? 'border-red-500 placeholder-red-400 ring-2 ring-red-100' : 'border-slate-200 placeholder-slate-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400'}`}
           />
         </div>
       </div>

@@ -40,8 +40,7 @@ function showLeaderboard(room) {
 
   const sortedPlayers = rooms[room].players
     .filter((player) => player.name !== 'Host') // Exclude host
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3); // Top 3
+    .sort((a, b) => b.score - a.score);
 
   const topPlayers = sortedPlayers.map((player, index) => ({
     name: player.name,
@@ -51,9 +50,18 @@ function showLeaderboard(room) {
 
   rooms[room].gameState = GAME_STATES.GAME_OVER;
 
+  // Prepare full Question & Correct Answer list for Review
+  // We should only send the necessary data, not entire server objects if they have sensitive info (but here it's fine)
+  const history = rooms[room].questions.map(q => ({
+    question: q.question,
+    options: q.answerList, // contains isCorrect
+    // Add any other necessary fields
+  }));
+
   io.to(room).emit('gameOver', {
     winner: topPlayers[0]?.name || 'No one',
     topPlayers,
+    history // Send full history
   });
 
   // Clean up eventually
@@ -98,6 +106,7 @@ function askNewQuestion(room) {
   roomData.currentQuestion = ques;
   roomData.currentQuestionIndex = currentQuestionIndex + 1;
   roomData.gameState = GAME_STATES.QUESTION_ACTIVE;
+  roomData.currentAnswerCount = 0; // Reset answer count
 
   const timer = getTimer(room);
 
@@ -132,17 +141,28 @@ function handleQuestionEnd(room) {
   if (!roomData) return;
 
   roomData.gameState = GAME_STATES.WAITING_FOR_NEXT;
-  io.to(room).emit('questionEnded'); // Notify clients time is up
+
+  // Check if this was the last question
+  const isLastQuestion = roomData.currentQuestionIndex >= roomData.questions.length;
 
   // Auto Advance Logic
-  if (!roomData.isManualControl) {
+  if (!roomData.isManualControl && !isLastQuestion) {
     const breakTime = getBreakTime(room);
+
+    // Notify clients about auto-advance
+    io.to(room).emit('questionEnded', {
+      isLastQuestion,
+      autoAdvance: true,
+      nextQuestionDelay: breakTime
+    });
+
     roomData.questionTimeout = setTimeout(() => {
       askNewQuestion(room);
     }, breakTime);
   } else {
-    // Manual Mode: Do nothing, wait for 'nextQuestion' event
-    console.log(`Room ${room}: Waiting for host (Manual Mode)`);
+    // Manual Mode OR Last Question: Do nothing, wait for 'nextQuestion' event or 'leaderboard'
+    io.to(room).emit('questionEnded', { isLastQuestion, autoAdvance: false });
+    console.log(`Room ${room}: Waiting for host (Manual Mode or Last Question)`);
   }
 }
 
@@ -154,8 +174,8 @@ const getTimer = (room) => {
 
 const getBreakTime = (room) => {
   const config = rooms[room]?.quizConfig;
-  if (config?.gameMode === 'RapidFire') return 1000;
-  return 5000;
+  if (config?.gameMode === 'RapidFire') return 2000;
+  return 4000; // 4 seconds break (allows for 3s countdown + 1s buffer)
 };
 
 io.on('connection', (socket) => {
@@ -255,6 +275,10 @@ io.on('connection', (socket) => {
 
     const currentQ = roomData.currentQuestion;
     const isCorrect = currentQ.answerList[answerIndex]?.isCorrect;
+
+    // Track Answers
+    roomData.currentAnswerCount = (roomData.currentAnswerCount || 0) + 1;
+    io.to(room).emit('answerCountUpdate', { count: roomData.currentAnswerCount });
 
     // Calculate points
     let points = 0;

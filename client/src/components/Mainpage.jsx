@@ -115,7 +115,7 @@ function Mainpage() {
 
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-fade-in-up delay-300 w-full max-w-md md:max-w-none">
           <Link to="/login" className="w-full md:w-auto bg-white text-blue-600 px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
-            Create Quiz
+            Dashboard
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>

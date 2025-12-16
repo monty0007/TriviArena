@@ -79,7 +79,7 @@ function RightSidebar() {
   };
 
   return (
-    <div className="w-full md:w-1/5 bg-white border-t md:border-t-0 md:border-l border-gray-200 p-4 flex flex-col items-center h-auto md:h-full overflow-y-auto">
+    <div className="w-full bg-white border-t md:border-t-0 md:border-l border-gray-200 p-4 flex flex-col items-center h-auto md:h-full overflow-y-auto">
 
       <div className="w-full mb-6">
         <h3 className="text-gray-800 font-black text-lg mb-4 flex items-center gap-2">
@@ -124,10 +124,10 @@ function RightSidebar() {
           >
             <option value={5}>5 Seconds</option>
             <option value={10}>10 Seconds</option>
+            <option value={15}>15 Seconds</option>
             <option value={20}>20 Seconds</option>
+            <option value={25}>25 Seconds</option>
             <option value={30}>30 Seconds</option>
-            <option value={60}>60 Seconds</option>
-            <option value={90}>90 Seconds</option>
           </select>
         </div>
 

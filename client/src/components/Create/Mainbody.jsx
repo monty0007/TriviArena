@@ -136,11 +136,11 @@ function Mainbody() {
   if (!displayQuestion) return <div>Loading...</div>;
 
   return (
-    <div className="w-full md:w-3/5 h-full bg-gray-100 p-4 md:p-8 flex flex-col items-center custom-scrollbar overflow-y-auto">
+    <div className="w-full h-full bg-gray-100 p-4 md:p-8 flex flex-col items-center custom-scrollbar overflow-y-auto">
 
       {/* Validation Error Banner */}
       {validationError && Object.keys(validationError).length > 0 && (
-        <div className="w-full max-w-4xl bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-md animate-pulse">
+        <div className="w-full bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-md animate-pulse">
           <div className="flex items-center">
             <svg className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -160,7 +160,7 @@ function Mainbody() {
       )}
 
       {/* Question Input */}
-      <div className={`w-full max-w-4xl bg-white rounded-xl shadow-card p-6 mb-8 transition-all duration-300 ${validationError?.question ? 'ring-4 ring-red-500 border-red-500' : ''}`}>
+      <div className={`w-full bg-white rounded-xl shadow-card p-6 mb-8 transition-all duration-300 ${validationError?.question ? 'ring-4 ring-red-500 border-red-500' : ''}`}>
         <input
           type="text"
           value={displayQuestion.question || ''}
@@ -171,7 +171,7 @@ function Mainbody() {
       </div>
 
       {/* Media Area */}
-      <div className="w-full max-w-4xl h-96 mb-6">
+      <div className="w-full h-96 mb-6">
         {displayQuestion.backgroundImage ? (
           <div className="w-full h-full relative group rounded-xl overflow-hidden shadow-lg">
             <img src={displayQuestion.backgroundImage} alt="Question" className="w-full h-full object-cover" />

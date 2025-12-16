@@ -16,22 +16,31 @@ function Host() {
   const [seconds, setSeconds] = useState(10);
   const [isQuestionActive, setIsQuestionActive] = useState(false);
 
-  // State for Waiting / Manual Logic
   const [isWaitingForNext, setIsWaitingForNext] = useState(false);
   const [isManualMode, setIsManualMode] = useState(true); // Default to Manual
+  const [isLastQuestion, setIsLastQuestion] = useState(false);
+  const [autoCountdown, setAutoCountdown] = useState(null);
+  const [answerCount, setAnswerCount] = useState(0);
 
   const [winner, setWinner] = useState(null);
   const [topPlayers, setTopPlayers] = useState([]);
   const { setRoom, room, mainQuestion, quiz } = useContext(Question);
   const navigate = useNavigate();
 
+  // Precise Timer Logic
+  const [endTime, setEndTime] = useState(null);
+
   useEffect(() => {
-    if (seconds === 0) return;
-    const timeInterval = setInterval(() => {
-      setSeconds((prevTime) => prevTime - 1);
-    }, 1000);
-    return () => clearInterval(timeInterval);
-  }, [seconds]);
+    if (!endTime) return;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+      setSeconds(remaining);
+      if (remaining <= 0) {
+        // Any specific zero-logic here if needed, or rely on server event
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [endTime]);
 
   useEffect(() => {
     const handleReconnection = () => {
@@ -85,6 +94,10 @@ function Host() {
           setQuestion(currentQuestion.question);
           setOptions(currentQuestion.answers);
           setSeconds(currentQuestion.timer);
+          // Note: On reconnect, server currently sends full duration. 
+          // Ideally server should send remaining time. 
+          // For now, we restart the visual timer based on received value.
+          setEndTime(Date.now() + (currentQuestion.timer * 1000));
           setIsQuestionActive(true);
           setIsWaitingForNext(false);
         } else if (gameState === 'WAITING_FOR_NEXT') {
@@ -102,12 +115,39 @@ function Host() {
       setQuestion(question);
       setOptions(answers);
       setSeconds(timer);
+      setEndTime(Date.now() + (timer * 1000));
+      setIsQuestionActive(true);
+      setEndTime(Date.now() + (timer * 1000));
+      setIsQuestionActive(true);
       setIsQuestionActive(true);
       setIsWaitingForNext(false); // Question started, no longer waiting
+      setAutoCountdown(null);
+      setAnswerCount(0);
     });
 
-    socket.on('questionEnded', () => {
+    socket.on('answerCountUpdate', ({ count }) => {
+      setAnswerCount(count);
+    });
+
+    socket.on('questionEnded', ({ isLastQuestion, autoAdvance, nextQuestionDelay } = {}) => {
       setIsWaitingForNext(true); // Question ended, now waiting (if manual)
+      if (isLastQuestion) setIsLastQuestion(true);
+
+      if (autoAdvance && nextQuestionDelay) {
+        let c = Math.floor(nextQuestionDelay / 1000) - 1;
+        if (c < 1) c = 3;
+        setAutoCountdown(c);
+
+        const intv = setInterval(() => {
+          setAutoCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(intv);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
     });
 
     socket.on('userJoined', ({ users }) => {
@@ -153,49 +193,128 @@ function Host() {
   };
 
   // Winner Screen
+  // Winner Screen
+  // Winner Screen
   if (winner) {
     return (
-      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 text-center overflow-hidden relative font-sans">
+      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center p-4 md:p-8 font-sans overflow-y-auto">
         <Confetti width={window.innerWidth} height={window.innerHeight} recycle={true} numberOfPieces={600} />
 
-        <div className="z-10 w-full max-w-4xl bg-white rounded-3xl shadow-card p-12">
-          <h1 className="text-6xl font-black text-gray-900 mb-8">Podium</h1>
+        {/* Navigation - Top Left Back Button */}
+        <nav className="absolute top-0 left-0 w-full p-6 z-50 flex justify-start items-center pointer-events-none">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20 backdrop-blur-sm"
+          >
+            <span>←</span> Back
+          </button>
+        </nav>
 
-          <div className="flex justify-center items-end h-[400px] gap-4 mb-12">
-            {/* 2nd Place */}
-            {topPlayers[1] && (
-              <div className="flex flex-col items-center animate-slide-up animation-delay-500">
-                <div className="w-20 h-20 rounded-full border-4 border-gray-200 bg-gray-100 flex items-center justify-center mb-2 shadow-md">
-                  <span className="text-gray-800 font-bold">{topPlayers[1].name}</span>
-                </div>
-                <div className="w-24 h-48 bg-gray-400 rounded-t-lg flex items-end justify-center pb-4 text-3xl font-black text-white shadow-lg">2</div>
+        {/* Header - Transparent on Background */}
+        <div className="mb-16 md:mb-24 text-center z-10 pt-8 animate-fade-in-down">
+          <h1 className="text-4xl md:text-6xl font-black text-white mb-2 drop-shadow-md tracking-tight">The Results</h1>
+          <div className="bg-white/20 backdrop-blur-md px-6 py-1 rounded-full inline-block border border-white/20">
+            <p className="text-white font-bold uppercase tracking-widest text-sm md:text-base">🎉 Congratulations! 🎉</p>
+          </div>
+        </div>
+
+        {/* Podium Section - Standalone */}
+        <div className="w-full max-w-4xl flex justify-center items-end h-[280px] md:h-[380px] gap-2 md:gap-6 mb-16 md:mb-24 z-10 px-4">
+          {/* 2nd Place */}
+          {topPlayers[1] && (
+            <div className="flex flex-col items-center animate-slide-up animation-delay-500 relative group w-1/3 max-w-[150px]">
+              <div className="mb-2 md:mb-4 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-lg">
+                <span className="text-white font-bold text-xs md:text-sm">{topPlayers[1].score} pts</span>
               </div>
-            )}
-            {/* 1st Place */}
-            {topPlayers[0] && (
-              <div className="flex flex-col items-center z-10 animate-slide-up">
-                <div className="w-24 h-24 rounded-full border-4 border-yellow-200 bg-yellow-100 flex items-center justify-center mb-2 shadow-lg">
-                  <span className="text-gray-800 font-bold text-xl">{topPlayers[0].name}</span>
-                </div>
-                <div className="w-32 h-64 bg-yellow-400 rounded-t-lg flex items-end justify-center pb-4 text-5xl font-black text-white shadow-xl">
-                  1
-                </div>
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-gray-300 bg-gray-100 flex items-center justify-center mb-[-1rem] md:mb-[-1.5rem] shadow-lg z-20 relative">
+                <span className="text-gray-800 font-bold text-xs md:text-xl truncate max-w-[90%] px-1" title={topPlayers[1].name}>{topPlayers[1].name}</span>
               </div>
-            )}
-            {/* 3rd Place */}
-            {topPlayers[2] && (
-              <div className="flex flex-col items-center animate-slide-up animation-delay-1000">
-                <div className="w-20 h-20 rounded-full border-4 border-orange-200 bg-orange-100 flex items-center justify-center mb-2 shadow-md">
-                  <span className="text-gray-800 font-bold">{topPlayers[2].name}</span>
-                </div>
-                <div className="w-24 h-32 bg-orange-400 rounded-t-lg flex items-end justify-center pb-4 text-3xl font-black text-white shadow-lg">3</div>
+              <div className="w-full h-32 md:h-48 bg-gray-300 rounded-t-2xl shadow-2xl relative overflow-hidden flex flex-col items-center justify-end pb-4 border-t border-white/30">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
+                <span className="text-4xl md:text-6xl font-black text-white/50">2</span>
+              </div>
+            </div>
+          )}
+
+          {/* 1st Place */}
+          {topPlayers[0] && (
+            <div className="flex flex-col items-center z-20 animate-slide-up relative group w-1/3 max-w-[180px]">
+              <div className="mb-2 md:mb-4 bg-yellow-400/20 backdrop-blur-sm border border-yellow-300/50 px-4 py-1.5 rounded-lg animate-bounce">
+                <span className="text-yellow-100 font-bold text-sm md:text-lg">{topPlayers[0].score} pts</span>
+              </div>
+              <div className="absolute -top-16 md:-top-24 text-5xl md:text-7xl drop-shadow-2xl filter animate-float">👑</div>
+
+              <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-yellow-300 bg-yellow-100 flex items-center justify-center mb-[-1.5rem] md:mb-[-2rem] shadow-[0_0_30px_rgba(253,224,71,0.6)] z-20 relative">
+                <span className="text-gray-900 font-black text-sm md:text-2xl truncate max-w-[90%] px-1" title={topPlayers[0].name}>{topPlayers[0].name}</span>
+              </div>
+              <div className="w-full h-48 md:h-64 bg-yellow-400 rounded-t-2xl shadow-2xl relative overflow-hidden flex flex-col items-center justify-end pb-6 border-t border-white/40">
+                <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/50 to-transparent"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                <span className="text-6xl md:text-8xl font-black text-white">1</span>
+              </div>
+            </div>
+          )}
+
+          {/* 3rd Place */}
+          {topPlayers[2] && (
+            <div className="flex flex-col items-center animate-slide-up animation-delay-1000 relative group w-1/3 max-w-[150px]">
+              <div className="mb-2 md:mb-4 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-lg">
+                <span className="text-white font-bold text-xs md:text-sm">{topPlayers[2].score} pts</span>
+              </div>
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-orange-200 bg-orange-100 flex items-center justify-center mb-[-1rem] md:mb-[-1.5rem] shadow-lg z-20 relative">
+                <span className="text-gray-800 font-bold text-xs md:text-xl truncate max-w-[90%] px-1" title={topPlayers[2].name}>{topPlayers[2].name}</span>
+              </div>
+              <div className="w-full h-24 md:h-40 bg-orange-400 rounded-t-2xl shadow-2xl relative overflow-hidden flex flex-col items-center justify-end pb-4 border-t border-white/30">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
+                <span className="text-4xl md:text-6xl font-black text-white/50">3</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* List Box - Separate Text Box Below */}
+        <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl z-20 flex flex-col animate-slide-up animation-delay-1000 overflow-hidden mb-8">
+          <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">Runner Ups</h2>
+            <span className="text-gray-400 font-bold text-sm uppercase tracking-wider">{topPlayers.length} Players</span>
+          </div>
+
+          <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-0">
+            {topPlayers.slice(3).length > 0 ? (
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-gray-100 text-gray-400 text-xs uppercase tracking-wider sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-6 py-3 font-bold">Rank</th>
+                    <th className="px-6 py-3 font-bold">Player</th>
+                    <th className="px-6 py-3 font-bold text-right">Score</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {topPlayers.slice(3).map((player) => (
+                    <tr key={player.position} className="hover:bg-blue-50 transition-colors group">
+                      <td className="px-6 py-4 font-bold text-gray-500 group-hover:text-blue-600">#{player.position}</td>
+                      <td className="px-6 py-4 font-bold text-gray-800 text-lg">{player.name}</td>
+                      <td className="px-6 py-4 font-black text-right text-blue-600 font-mono">{player.score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-10 text-center text-gray-400">
+                <span className="text-4xl block mb-2">🎈</span>
+                <p className="font-bold">That's everyone! Great game!</p>
               </div>
             )}
           </div>
 
-          <button onClick={() => navigate('/dashboard')} className="bg-gray-800 text-white font-bold py-4 px-10 rounded shadow-button hover:bg-black active:shadow-button-active active:translate-y-1 transition-all text-xl">
-            Back to Dashboard
-          </button>
+          <div className="p-6 bg-gray-50 border-t border-gray-100">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            >
+              <span>🏠</span> Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -211,6 +330,20 @@ function Host() {
         <div className="absolute bottom-10 right-10 text-9xl text-white transform rotate-12">!</div>
       </div>
 
+      {/* Navigation - Top Left Back Button */}
+      <nav className="absolute top-0 left-0 w-full p-6 z-50 flex justify-start items-center pointer-events-none">
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to leave? This will end the session for everyone.')) {
+              navigate('/dashboard');
+            }
+          }}
+          className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20 backdrop-blur-sm"
+        >
+          <span>←</span> Back
+        </button>
+      </nav>
+
       {/* Top Header Row (PIN / Users) only in Lobby or small in game */}
       {!isQuestionActive ? (
         // LOBBY STATE
@@ -218,7 +351,7 @@ function Host() {
           <div className="bg-white p-6 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="flex flex-col">
               <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Join at</span>
-              <span className="text-3xl md:text-4xl font-black text-blue-600">triviarena.com</span>
+              <span className="text-3xl md:text-4xl font-black text-blue-600">triviarena.xyz</span>
             </div>
             <div className="flex flex-col items-center md:items-end">
               <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Game PIN</span>
@@ -235,14 +368,14 @@ function Host() {
                 </div>
 
                 {/* Mode Toggle */}
-                <div className="flex items-center gap-2 md:gap-3 bg-white px-3 py-2 md:px-4 rounded-full border border-gray-200 shadow-sm">
+                <div
+                  onClick={() => setIsManualMode(!isManualMode)}
+                  className="flex items-center gap-2 md:gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                >
                   <span className={`text-xs md:text-sm font-bold ${isManualMode ? 'text-purple-600' : 'text-gray-400'}`}>Manual</span>
-                  <button
-                    onClick={() => setIsManualMode(!isManualMode)}
-                    className={`w-10 h-5 md:w-12 md:h-6 rounded-full p-1 transition-colors ${!isManualMode ? 'bg-blue-600' : 'bg-purple-600'}`}
-                  >
-                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full bg-white shadow-sm transform transition-transform ${!isManualMode ? 'translate-x-5 md:translate-x-6' : 'translate-x-0'}`} />
-                  </button>
+                  <div className={`w-12 h-6 rounded-full p-1 transition-colors relative ${!isManualMode ? 'bg-blue-600' : 'bg-purple-600'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${!isManualMode ? 'translate-x-6' : 'translate-x-0'}`} />
+                  </div>
                   <span className={`text-xs md:text-sm font-bold ${!isManualMode ? 'text-blue-600' : 'text-gray-400'}`}>Auto</span>
                 </div>
               </div>
@@ -271,7 +404,7 @@ function Host() {
         <div className="z-10 w-full max-w-7xl flex flex-col h-full items-center">
 
           <div className="flex justify-between items-center w-full mb-6 text-white font-bold">
-            <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">{joinedUsers.length - 1} Answers</div>
+            <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">{answerCount} Answered</div>
             <div className="text-center">TriviArena</div>
             <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">PIN: {room}</div>
           </div>
@@ -316,15 +449,24 @@ function Host() {
             })}
           </div>
 
-          {/* HOST CONTROLS - NEXT BUTTON */}
+          {/* HOST CONTROLS - NEXT BUTTON or AUTO COUNTDOWN */}
           {isWaitingForNext && (
             <div className="fixed bottom-10 z-50 animate-bounce-in">
-              <button
-                onClick={handleNextQuestion}
-                className="bg-white text-gray-900 border-4 border-gray-900 px-10 py-4 rounded-full font-black text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-              >
-                Next Question ➜
-              </button>
+              {autoCountdown ? (
+                <div className="bg-white/90 backdrop-blur border-4 border-purple-500 text-purple-700 px-10 py-4 rounded-full font-black text-2xl shadow-xl flex items-center gap-3 animate-pulse">
+                  <span>⏳</span> Next Question in {autoCountdown}...
+                </div>
+              ) : (
+                <button
+                  onClick={handleNextQuestion}
+                  className={`
+                    bg-white text-gray-900 border-4 border-gray-900 px-10 py-4 rounded-full font-black text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3
+                    ${isLastQuestion ? 'bg-yellow-300 border-yellow-500 text-yellow-900' : ''}
+                  `}
+                >
+                  {isLastQuestion ? 'View Results 🏆' : 'Next Question ➜'}
+                </button>
+              )}
             </div>
           )}
 
