@@ -6,7 +6,7 @@ import { FiUser } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
 import Confetti from 'react-confetti';
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', { autoConnect: false });
+const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://backend-kahoot-3.onrender.com', { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);

@@ -20,18 +20,23 @@ function Dashboard() {
 
   const { setQuiz, setMainQuestion, setDisplayQuestion, displayQuestion, setValidationError, setRoom } = useContext(Question)
 
-  const fetchUserData = async () => {
-    auth.onAuthStateChanged(async (user) => {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUserDetails(user)
-        const fetchedQuizzes = await fetchTeacherQuizes(user.uid)
-        setQuizzes(fetchedQuizzes)
+        try {
+          const fetchedQuizzes = await fetchTeacherQuizes(user.uid)
+          setQuizzes(fetchedQuizzes)
+        } catch (error) {
+          console.error("Error fetching quizzes:", error)
+          toast.error("Failed to load quizzes")
+        }
+      } else {
+        setUserDetails(null)
+        setQuizzes([])
       }
     })
-  }
-
-  useEffect(() => {
-    fetchUserData()
+    return () => unsubscribe()
   }, [])
 
   const handleQuizClick = async (quizId) => {
@@ -208,7 +213,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2563eb] font-sans pb-10">
+    <div className="min-h-[100dvh] bg-[#2563eb] font-sans pb-20 overflow-x-hidden">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
