@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 function Mainpage() {
   return (
-    <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 relative font-sans">
       {/* Background Shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[5%] w-32 h-32 bg-white/10 rounded-full animate-bounce-slow"></div>

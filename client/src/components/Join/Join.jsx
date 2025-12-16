@@ -134,7 +134,7 @@ export default function Join() {
   // Join Screen
   if (!info) {
     return (
-      <div className="min-h-screen bg-[#2563eb] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      <div className="min-h-screen bg-[#2563eb] flex items-center justify-center p-4 relative font-sans">
         {/* Background Decor */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-10 w-24 h-24 bg-white/10 rounded-full animate-float"></div>
@@ -178,7 +178,7 @@ export default function Join() {
 
   // Active Game Screen
   return (
-    <div className="min-h-screen bg-[#2563eb] flex flex-col p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#2563eb] flex flex-col p-4 relative font-sans">
       <ToastContainer />
 
       <div className="flex justify-between items-center mb-6 z-10 w-full max-w-4xl mx-auto text-white">

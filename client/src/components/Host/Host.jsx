@@ -129,7 +129,7 @@ function Host() {
 
   // Active Game Screen for Host
   return (
-    <div className={`min-h-screen bg-[#2563eb] flex flex-col items-center p-6 relative overflow-hidden font-sans ${isQuestionActive ? 'justify-start pt-6' : 'justify-center'}`}>
+    <div className={`min-h-screen bg-[#2563eb] flex flex-col items-center p-6 relative font-sans ${isQuestionActive ? 'justify-start pt-6' : 'justify-center'}`}>
 
       {/* Background Decor */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
@@ -190,9 +190,9 @@ function Host() {
           <div className="bg-white text-gray-900 w-full p-10 rounded shadow-card mb-8 text-center min-h-[180px] flex items-center justify-center relative">
             <h2 className="text-4xl md:text-5xl font-black leading-tight">{question}</h2>
 
-            {/* Timer Circle */}
-            <div className="absolute -left-16 top-1/2 transform -translate-y-1/2 w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-              <span className="text-3xl font-black text-white">{seconds}</span>
+            {/* Timer Circle - Responsive Positioning */}
+            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+              <span className="text-2xl md:text-3xl font-black text-white">{seconds}</span>
             </div>
           </div>
 

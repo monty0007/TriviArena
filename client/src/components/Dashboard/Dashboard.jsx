@@ -8,6 +8,7 @@ import { sampleQuizzes } from '../../data/sampleQuizzes' // Import Sample Data
 import { toast } from 'react-toastify'
 
 import { v4 as uuidv4 } from 'uuid'; // Add UUID import
+import Swal from 'sweetalert2'
 
 function Dashboard() {
   const user = auth.currentUser
@@ -79,11 +80,34 @@ function Dashboard() {
   }
 
   const handleDelete = async (quizId) => {
-    if (window.confirm("Are you sure you want to delete this quiz?")) {
+    const result = await Swal.fire({
+      title: 'Delete Quiz?',
+      text: "This action cannot be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      focusConfirm: false,
+      background: '#ffffff',
+      backdrop: `rgba(28, 25, 23, 0.4)`,
+      customClass: {
+        popup: 'rounded-2xl shadow-xl border border-gray-100 font-sans',
+        title: 'text-2xl font-black text-gray-800',
+        htmlContainer: 'text-gray-600',
+        confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
+        cancelButton: 'bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-lg px-6 py-3 hover:shadow-md transition-all',
+        actions: 'gap-4 w-full flex justify-center mt-4'
+      }
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteQuiz(quizId);
         const fetchedQuizzes = await fetchTeacherQuizes(user.uid);
         setQuizzes(fetchedQuizzes);
+
+        // Optional: Show success toast or small swal
         toast.success("Quiz deleted successfully");
       } catch (error) {
         console.error("Failed to delete quiz:", error);
@@ -205,7 +229,7 @@ function Dashboard() {
                       {/* Delete Button */}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(quiz._id); }}
-                        className="absolute top-4 right-4 z-10 p-2 bg-gray-100 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute top-4 right-4 z-10 p-2 bg-gray-100 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
                         title="Delete Quiz"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

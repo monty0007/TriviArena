@@ -48,7 +48,7 @@ function RightSidebar() {
             name={name}
             value={value}
             onChange={handlePoints}
-            className={`w-full bg-gray-100 border text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors font-bold ${hasError ? 'border-red-500 ring-2 ring-red-500 bg-red-50' : 'border-transparent focus:bg-white focus:border-blue-500 hover:bg-gray-200'}`}
+            className={`w-full appearance-none bg-gray-100 border text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors font-bold ${hasError ? 'border-red-500 ring-2 ring-red-500 bg-red-50' : 'border-transparent focus:bg-white focus:border-blue-500 hover:bg-gray-200'}`}
           >
             {options.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -60,13 +60,7 @@ function RightSidebar() {
                 I will style the select to appearance-none to fix this, or just remove this custom arrow if the browser one is preferred.
                 Let's use appearance-none on the select to keep the custom styling consistent. */}
           </div>
-          <style jsx>{`
-            select {
-              appearance: none;
-              -webkit-appearance: none;
-              -moz-appearance: none;
-            }
-          `}</style>
+
         </div>
       </div>
     )
