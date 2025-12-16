@@ -86,7 +86,7 @@ function Mainpage() {
           ) : (
             <>
               <Link to="/login" className="px-5 py-2 text-blue-100 hover:text-white font-bold transition-colors hidden md:block">Log In</Link>
-              <Link to="/login" className="bg-white text-blue-600 px-5 py-2 rounded-full font-bold shadow-lg hover:shadow-cyan-500/50 hover:scale-105 transition-all">Sign Up</Link>
+              <Link to="/register" className="bg-white text-blue-600 px-5 py-2 rounded-full font-bold shadow-lg hover:shadow-cyan-500/50 hover:scale-105 transition-all">Sign Up</Link>
             </>
           )}
         </div>

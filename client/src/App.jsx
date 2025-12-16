@@ -15,12 +15,24 @@ import AfterHost from './components/Host/AfterHost'
 import Answers from './components/Answers/Answers'
 
 function App() {
-  const [user, setUser] = useState()
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user)
+      setLoading(false)
     })
-  })
+    return unsubscribe
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-blue-600 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
+      </div>
+    )
+  }
 
   const routes = [
     {
@@ -29,7 +41,7 @@ function App() {
     },
     {
       path: '/create',
-      element: <Create />,
+      element: user ? <Create /> : <Navigate to="/login" replace />,
     },
     {
       path: '/join',
@@ -38,26 +50,25 @@ function App() {
     {
       path: '/login',
       element: user ? <Navigate to="/dashboard" replace /> : <Login />,
-      // element: <Login/>
     },
     {
       path: '/register',
-      element: <Register />,
+      element: user ? <Navigate to="/dashboard" replace /> : <Register />,
     },
     {
       path: '/dashboard',
-      element: <Dashboard />,
+      element: user ? <Dashboard /> : <Navigate to="/login" replace />,
     },
     {
       path: '/host',
-      element: <Host />,
+      element: user ? <Host /> : <Navigate to="/login" replace />,
     },
     {
       path: '/display',
-      element: <AfterHost />,
+      element: user ? <AfterHost /> : <Navigate to="/login" replace />,
     }, {
       path: '/answers',
-      element: <Answers />
+      element: user ? <Answers /> : <Navigate to="/login" replace />,
     }
   ]
 

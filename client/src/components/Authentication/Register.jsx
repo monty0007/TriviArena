@@ -52,6 +52,12 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-[#2563eb] flex items-center justify-center p-4 overflow-hidden relative font-sans">
+      {/* Navigation - Top Left Back Button */}
+      <nav className="absolute top-0 left-0 w-full p-6 z-20 flex justify-start items-center pointer-events-none">
+        <Link to="/" className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20">
+          <span>←</span> Back
+        </Link>
+      </nav>
       {/* Background Shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[10%] w-24 h-24 bg-white/10 rounded-full animate-float"></div>

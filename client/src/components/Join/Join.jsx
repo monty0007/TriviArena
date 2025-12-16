@@ -27,20 +27,7 @@ export default function Join() {
   const [quizHistory, setQuizHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  useEffect(() => {
-    // Reconnection Logic
-    const storedRoom = sessionStorage.getItem('player_room');
-    const storedName = sessionStorage.getItem('player_name');
-
-    if (storedRoom && storedName) {
-      setRoom(storedRoom);
-      setName(storedName);
-      socket.emit('joinRoom', { room: storedRoom, name: storedName }, ({ users, room }) => {
-        setRoom(room);
-        setInfo(true);
-      });
-    }
-  }, []);
+  /* REMOVED AUTO-RECONNECT LOGIC */
 
   function handleSubmit(e) {
     e.preventDefault();

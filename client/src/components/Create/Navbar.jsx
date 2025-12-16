@@ -111,11 +111,10 @@ export default function Navbar(props) {
         title: 'Save Quiz?',
         text: "Are you sure you want to save these changes?",
         icon: 'question',
-        showCancelButton: true,
+        showCancelButton: false, // Removed Cancel button
         showDenyButton: true,
         confirmButtonText: 'Yes, Save it!',
         denyButtonText: `Don't save`,
-        cancelButtonText: 'Cancel',
         reverseButtons: true, // Puts confirmation on right, safer
         focusConfirm: false,
         background: '#ffffff',
@@ -126,7 +125,7 @@ export default function Navbar(props) {
           htmlContainer: 'text-gray-600',
           confirmButton: 'bg-[#46178f] hover:bg-[#3d1380] text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
           denyButton: 'bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
-          cancelButton: 'bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-lg px-6 py-3 hover:shadow-md transition-all',
+          // cancelButton removed
           actions: 'gap-4 w-full flex justify-center mt-4'
         }
       })
