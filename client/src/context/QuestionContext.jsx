@@ -96,6 +96,40 @@ export default function QuestionContext(props) {
   const [validationError, setValidationError] = useState({})
 
 
+  // Persistence Logic
+  // Persistence Logic
+  const [isRestored, setIsRestored] = useState(false);
+
+  React.useEffect(() => {
+    // Save to storage on change - ONLY if restored
+    if (isRestored) {
+      sessionStorage.setItem('creator_quiz', JSON.stringify(quiz));
+      sessionStorage.setItem('creator_questions', JSON.stringify(mainQuestion));
+    }
+  }, [quiz, mainQuestion, isRestored]);
+
+  React.useEffect(() => {
+    // Load from storage on mount
+    const storedQuiz = sessionStorage.getItem('creator_quiz');
+    const storedQuestions = sessionStorage.getItem('creator_questions');
+
+    if (storedQuiz && storedQuestions) {
+      try {
+        const parsedQuiz = JSON.parse(storedQuiz);
+        const parsedQuestions = JSON.parse(storedQuestions);
+
+        setQuiz(parsedQuiz);
+        setMainQuestion(parsedQuestions);
+        if (parsedQuestions.length > 0) {
+          setDisplayQuestion(parsedQuestions[0]);
+        }
+      } catch (e) {
+        console.error("Failed to restore creator session", e);
+      }
+    }
+    setIsRestored(true); // Allow saving after restoration attempt
+  }, []); // Run once on mount
+
   return (
     <Question.Provider
       value={{

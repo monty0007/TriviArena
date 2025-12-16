@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 const quizSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  // description: { type: String },s
+  description: { type: String },
   // backgroundImage: { type: String },
   creatorId: {
     type: String,
@@ -33,7 +33,7 @@ const quizSchema = new mongoose.Schema({
     min: 5,
     max: 90,
   },
-  _id:{
+  _id: {
     type: String
   },
   // isPublic: { type: Boolean, required: true, default: true },

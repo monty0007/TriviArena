@@ -16,7 +16,7 @@ function Login() {
       await signInWithEmailAndPassword(auth, email, password)
       console.log('User logged in Succesfully')
       toast.success('User logged in Successfully', { position: 'top-center' })
-      navigate('/dashboard')
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       console.log(error.message)
       toast.error('Login failed: ' + error.message, { position: 'top-center' })

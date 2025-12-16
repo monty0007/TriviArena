@@ -37,7 +37,7 @@ function App() {
     },
     {
       path: '/login',
-      element: user ? <Navigate to="/dashboard" /> : <Login />,
+      element: user ? <Navigate to="/dashboard" replace /> : <Login />,
       // element: <Login/>
     },
     {
@@ -67,14 +67,14 @@ function App() {
       {Component}
       <ToastContainer
         position="top-right"
-        autoClose={5000}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
         rtl={false}
-        pauseOnFocusLoss
+        pauseOnFocusLoss={false}
         draggable
-        pauseOnHover
+        pauseOnHover={false}
         theme="light"
         toastClassName="shadow-lg"
       />

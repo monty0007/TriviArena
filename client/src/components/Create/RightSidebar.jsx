@@ -137,8 +137,7 @@ function RightSidebar() {
           <div className={`w-full bg-gray-100 rounded-lg p-1 flex ${validationError?.pointType ? 'ring-2 ring-red-500 bg-red-50' : ''}`}>
             <button
               onClick={() => updateQuestionHelper("Standard", "pointType")}
-              className={`p-3 rounded-lg border-2 font-bold text-sm flex flex-col items-center justify-center gap-1 transition-all
-                ${quiz.pointType === 'Standard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex-1 py-1 rounded text-xs font-bold transition-all ${quiz.pointType === 'Standard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               Standard
             </button>
@@ -156,6 +155,8 @@ function RightSidebar() {
             </button>
           </div>
         </div>
+
+
       </div>
 
       {renderSetting("🎮", "Game Mode", "gameMode", quiz.gameMode || "Standard", [

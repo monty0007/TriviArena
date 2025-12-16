@@ -6,11 +6,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 
-export default function Navbar() {
+export default function Navbar(props) {
   let navigate = useNavigate()
   let location = useLocation()
 
-  const { mainQuestion, quiz, setQuiz, displayQuestion, setMainQuestion, setValidationError } = useContext(Question)
+  const { mainQuestion, quiz, setQuiz, displayQuestion, setMainQuestion, setValidationError, setRoom } = useContext(Question)
 
   const handleSave = async () => {
     // Check if the necessary fields are filled
@@ -159,6 +159,29 @@ export default function Navbar() {
   }
 
   const handleHost = () => {
+    console.log("Handle Host Clicked");
+    console.log("MainQuestion:", mainQuestion);
+
+    if (!mainQuestion || mainQuestion.length === 0) {
+      console.log("Validation Failed: No questions");
+      toast.error('Please add at least one question before hosting!', { position: 'top-center' });
+      return;
+    }
+
+    // Generate new Room ID (4 digits)
+    const newRoomId = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log("Generated Room:", newRoomId);
+
+    // Update Context
+    setRoom(newRoomId);
+
+    // Persist to SessionStorage for Host.jsx recovery
+    sessionStorage.setItem('host_room', newRoomId);
+    sessionStorage.setItem('host_questions', JSON.stringify(mainQuestion));
+    sessionStorage.setItem('host_quiz', JSON.stringify(quiz));
+
+    console.log("Session Storage Set. Navigating to /host");
+
     navigate('/host')
   }
 
@@ -196,6 +219,9 @@ export default function Navbar() {
                 </button>
               </>
             )}
+
+            {/* Dashboard Actions */}
+            {/* Sample Button moved to Dashboard Header */}
 
             <button
               className="text-gray-500 hover:text-[#46178f] font-bold transition-colors px-2 py-1 md:px-3 md:py-2 text-sm md:text-base"

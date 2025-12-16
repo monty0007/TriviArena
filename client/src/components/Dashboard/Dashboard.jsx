@@ -18,7 +18,7 @@ function Dashboard() {
   const [isCreatingSample, setIsCreatingSample] = useState(false); // Rate limiting state
   const navigate = useNavigate()
 
-  const { setQuiz, setMainQuestion, setDisplayQuestion, displayQuestion, setValidationError } = useContext(Question)
+  const { setQuiz, setMainQuestion, setDisplayQuestion, displayQuestion, setValidationError, setRoom } = useContext(Question)
 
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
@@ -42,6 +42,11 @@ function Dashboard() {
       setMainQuestion(quizData.questionList)
       setDisplayQuestion(quizData.questionList[0])
       setValidationError({}) // Reset validation
+
+      // Explicitly persist data for refresh safety
+      sessionStorage.setItem('creator_quiz', JSON.stringify(quizData))
+      sessionStorage.setItem('creator_questions', JSON.stringify(quizData.questionList))
+
       navigate('/create')
     }
   }
@@ -171,6 +176,37 @@ function Dashboard() {
     }
   }
 
+  const handleHostGame = async (e, quizId) => {
+    e.stopPropagation();
+    const quizData = await fetchQuiz(quizId)
+    if (!quizData) {
+      toast.error('Error loading quiz')
+      return
+    }
+    if (!quizData.questionList || quizData.questionList.length === 0) {
+      toast.error('Quiz must have at least 1 question to host')
+      return
+    }
+
+    // Set Context
+    setQuiz(quizData)
+    setMainQuestion(quizData.questionList)
+    setDisplayQuestion(quizData.questionList[0])
+
+    // Generate Room PIN (4 digits)
+    const newRoom = Math.floor(1000 + Math.random() * 9000).toString()
+    setRoom(newRoom)
+
+    // Persist to SessionStorage to ensure Host page has data immediately and on refresh
+    sessionStorage.setItem('host_room', newRoom);
+    sessionStorage.setItem('host_questions', JSON.stringify(quizData.questionList));
+    sessionStorage.setItem('host_quiz', JSON.stringify(quizData));
+
+
+    // Navigate to Host
+    navigate('/host')
+  }
+
   return (
     <div className="min-h-screen bg-[#2563eb] font-sans pb-10">
       <Navbar />
@@ -183,12 +219,21 @@ function Dashboard() {
                 <h1 className="text-4xl font-black text-white mb-2 shadow-text-sm">My Dashboard</h1>
                 <p className="text-blue-100 font-medium">Welcome back, <span className="text-white font-bold">{userDetails.firstName || userDetails.displayName}</span></p>
               </div>
-              <button
-                className="bg-white/10 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-lg transition-all font-bold border border-white/20"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={createSampleQuiz}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-all font-bold shadow-lg hover:shadow-green-500/30 flex items-center gap-2 border border-white/20"
+                >
+                  <span>🌱</span>
+                  <span className="hidden md:inline">Sample Quiz</span>
+                </button>
+                <button
+                  className="bg-white/10 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-lg transition-all font-bold border border-white/20"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
             </div>
 
             <div className="mb-8">
@@ -211,13 +256,6 @@ function Dashboard() {
                   <h3 className="text-lg font-bold text-white">Create New Quiz</h3>
                 </div>
 
-                {/* Create Sample Button - Moved to Top */}
-                <div onClick={createSampleQuiz} className="group bg-green-500 border-dashed border-2 border-white/30 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-green-400 hover:border-white transition-all duration-300 min-h-[200px] md:min-h-[250px]">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white group-hover:text-green-600 text-white transition-all">
-                    <span className="text-2xl">🌱</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white">Create Sample Quiz</h3>
-                </div>
 
                 {quizzes && quizzes.length > 0 ? (
                   quizzes.map((quiz) => (
@@ -252,6 +290,16 @@ function Dashboard() {
                         <p className="text-gray-500 text-sm line-clamp-2 font-medium">{quiz.description || "No description provided."}</p>
                       </div>
 
+                      <button
+                        onClick={(e) => handleHostGame(e, quiz._id)}
+                        className="mt-4 w-full bg-[#46178f] hover:bg-[#3d1380] text-white font-bold py-2 rounded-lg transition-colors shadow-md z-20 relative flex items-center justify-center gap-2 group-hover:shadow-lg"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        </svg>
+                        Host Game
+                      </button>
+
                       <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400 font-bold uppercase tracking-wide">
                         <span>{quiz.questionList ? quiz.questionList.length : 0} Qs</span>
                         <span className="group-hover:text-blue-600 transition-colors">Open</span>
@@ -268,7 +316,7 @@ function Dashboard() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   )
 }
 

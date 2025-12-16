@@ -14,9 +14,12 @@ function Host() {
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState([]);
   const [seconds, setSeconds] = useState(10);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
   const [isQuestionActive, setIsQuestionActive] = useState(false);
+
+  // State for Waiting / Manual Logic
+  const [isWaitingForNext, setIsWaitingForNext] = useState(false);
+  const [isManualMode, setIsManualMode] = useState(true); // Default to Manual
+
   const [winner, setWinner] = useState(null);
   const [topPlayers, setTopPlayers] = useState([]);
   const { setRoom, room, mainQuestion, quiz } = useContext(Question);
@@ -31,22 +34,80 @@ function Host() {
   }, [seconds]);
 
   useEffect(() => {
-    setIsLoading(true);
-    socket.connect();
+    const handleReconnection = () => {
+      // 1. Try to recover from Context or SessionStorage
+      let currentRoom = room;
+      let currentQuestions = mainQuestion;
+      let currentQuiz = quiz;
 
-    socket.emit('joinRoom', { room: room, name: 'Host', questions: mainQuestion, quizConfig: { ...quiz } }, ({ users, room, isAdmin }) => {
-      setRoom(room);
-      setJoinedUsers(users);
-      setIsLoading(false);
-    });
+      if (!currentRoom) {
+        // Recovery Mode
+        const storedRoom = sessionStorage.getItem('host_room');
+        const storedQuestions = JSON.parse(sessionStorage.getItem('host_questions'));
+        const storedQuiz = JSON.parse(sessionStorage.getItem('host_quiz'));
+
+        if (storedRoom && storedQuestions) {
+          currentRoom = storedRoom;
+          currentQuestions = storedQuestions;
+          currentQuiz = storedQuiz || {};
+
+          // Restore Context
+          setRoom(currentRoom);
+          // Note context setters might not be exposed or working effectively inside this effect immediately, 
+          // but we use the local variables for the socket emitted data.
+        } else {
+          // No room found, navigate back
+          navigate('/dashboard');
+          return;
+        }
+      } else {
+        // Persist to SessionStorage for future refreshes
+        sessionStorage.setItem('host_room', currentRoom);
+        sessionStorage.setItem('host_questions', JSON.stringify(currentQuestions));
+        sessionStorage.setItem('host_quiz', JSON.stringify(currentQuiz));
+      }
+
+      setIsLoading(true);
+      socket.connect();
+
+      socket.emit('joinRoom', {
+        room: currentRoom,
+        name: 'Host',
+        questions: currentQuestions,
+        quizConfig: { ...currentQuiz }
+      }, ({ users, room, isAdmin, gameState, currentQuestion }) => {
+        setRoom(room);
+        setJoinedUsers(users);
+        setIsLoading(false);
+
+        // If reconnecting to an active game
+        if (gameState === 'QUESTION_ACTIVE' && currentQuestion) {
+          setQuestion(currentQuestion.question);
+          setOptions(currentQuestion.answers);
+          setSeconds(currentQuestion.timer);
+          setIsQuestionActive(true);
+          setIsWaitingForNext(false);
+        } else if (gameState === 'WAITING_FOR_NEXT') {
+          setIsQuestionActive(true);
+          setIsWaitingForNext(true);
+          setQuestion(currentQuestion?.question || "Waiting..."); // Display last question or placeholder
+          setOptions(currentQuestion?.answers || []);
+        }
+      });
+    };
+
+    handleReconnection();
 
     socket.on('newQuestion', ({ question, answers, timer }) => {
       setQuestion(question);
       setOptions(answers);
       setSeconds(timer);
-      setAnswered(false);
-      setSelectedAnswerIndex(null);
       setIsQuestionActive(true);
+      setIsWaitingForNext(false); // Question started, no longer waiting
+    });
+
+    socket.on('questionEnded', () => {
+      setIsWaitingForNext(true); // Question ended, now waiting (if manual)
     });
 
     socket.on('userJoined', ({ users }) => {
@@ -60,9 +121,16 @@ function Host() {
       setQuestion('');
       setOptions([]);
       setSeconds(10);
+
+      // Clear persistence
+      sessionStorage.removeItem('host_room');
+      sessionStorage.removeItem('host_questions');
+      sessionStorage.removeItem('host_quiz');
+
       socket.off('newQuestion');
       socket.off('userJoined');
       socket.off('gameOver');
+      socket.off('questionEnded');
       socket.disconnect();
     });
 
@@ -70,12 +138,18 @@ function Host() {
       socket.off('newQuestion');
       socket.off('userJoined');
       socket.off('gameOver');
+      socket.off('questionEnded');
       socket.disconnect();
     };
   }, []);
 
   const startGame = () => {
-    socket.emit('startGame', { room });
+    socket.emit('startGame', { room, isManualControl: isManualMode });
+  };
+
+  const handleNextQuestion = () => {
+    socket.emit('nextQuestion', { room });
+    setIsWaitingForNext(false); // Optimistic update
   };
 
   // Winner Screen
@@ -141,28 +215,43 @@ function Host() {
       {!isQuestionActive ? (
         // LOBBY STATE
         <div className="z-10 w-full max-w-6xl flex flex-col h-[85vh] bg-white rounded-3xl shadow-card overflow-hidden">
-          <div className="bg-white p-6 border-b border-gray-200 flex justify-between items-center">
+          <div className="bg-white p-6 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="flex flex-col">
-              <span className="text-gray-500 font-bold uppercase tracking-wide text-sm">Join at</span>
-              <span className="text-4xl font-black text-blue-600">triviarena.com</span>
+              <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Join at</span>
+              <span className="text-3xl md:text-4xl font-black text-blue-600">triviarena.com</span>
             </div>
-            <div className="flex flex-col items-end">
-              <span className="text-gray-500 font-bold uppercase tracking-wide text-sm">Game PIN</span>
-              <span className="text-6xl font-black text-gray-900 tracking-wider">{isLoading ? '...' : room}</span>
+            <div className="flex flex-col items-center md:items-end">
+              <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Game PIN</span>
+              <span className="text-5xl md:text-6xl font-black text-gray-900 tracking-wider">{isLoading ? '...' : room}</span>
             </div>
           </div>
 
           <div className="flex-1 bg-gray-50 p-8 overflow-y-auto">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-2 bg-gray-800 text-white px-5 py-2 rounded-full font-bold">
-                <FiUser />
-                <span>{joinedUsers.filter((user) => user.name !== 'Host').length}</span>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+              <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+                <div className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 md:px-5 md:py-2 rounded-full font-bold text-sm md:text-base">
+                  <FiUser />
+                  <span>{joinedUsers.filter((user) => user.name !== 'Host').length}</span>
+                </div>
+
+                {/* Mode Toggle */}
+                <div className="flex items-center gap-2 md:gap-3 bg-white px-3 py-2 md:px-4 rounded-full border border-gray-200 shadow-sm">
+                  <span className={`text-xs md:text-sm font-bold ${isManualMode ? 'text-purple-600' : 'text-gray-400'}`}>Manual</span>
+                  <button
+                    onClick={() => setIsManualMode(!isManualMode)}
+                    className={`w-10 h-5 md:w-12 md:h-6 rounded-full p-1 transition-colors ${!isManualMode ? 'bg-blue-600' : 'bg-purple-600'}`}
+                  >
+                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full bg-white shadow-sm transform transition-transform ${!isManualMode ? 'translate-x-5 md:translate-x-6' : 'translate-x-0'}`} />
+                  </button>
+                  <span className={`text-xs md:text-sm font-bold ${!isManualMode ? 'text-blue-600' : 'text-gray-400'}`}>Auto</span>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-400 animate-pulse">Waiting for players...</h2>
+
+              <h2 className="text-xl md:text-2xl font-bold text-gray-400 animate-pulse text-center">Waiting for players...</h2>
               <button
                 onClick={startGame}
                 disabled={joinedUsers.filter((user) => user.name !== 'Host').length === 0}
-                className="bg-gray-800 text-white px-8 py-3 rounded font-black text-lg shadow-button hover:bg-black active:shadow-button-active active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full md:w-auto bg-gray-800 text-white px-8 py-3 rounded font-black text-lg shadow-button hover:bg-black active:shadow-button-active active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Start
               </button>
@@ -187,16 +276,26 @@ function Host() {
             <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">PIN: {room}</div>
           </div>
 
-          <div className="bg-white text-gray-900 w-full p-10 rounded shadow-card mb-8 text-center min-h-[180px] flex items-center justify-center relative">
-            <h2 className="text-4xl md:text-5xl font-black leading-tight">{question}</h2>
+          <div className="bg-white text-gray-900 w-full p-4 md:p-10 rounded shadow-card mb-4 md:mb-8 text-center min-h-[150px] md:min-h-[180px] flex items-center justify-center relative">
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black leading-tight">{question}</h2>
 
             {/* Timer Circle - Responsive Positioning */}
-            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
-              <span className="text-2xl md:text-3xl font-black text-white">{seconds}</span>
-            </div>
+            {!isWaitingForNext && (
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+                <span className="text-2xl md:text-3xl font-black text-white">{seconds}</span>
+              </div>
+            )}
+
+            {/* Show 'Time Up' or Status when waiting OR when timer hits 0 locally */}
+            {(isWaitingForNext || seconds === 0) && (
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-red-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+                <span className="text-xs md:text-sm font-black text-white uppercase">Time Up</span>
+              </div>
+            )}
+
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-[350px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full flex-1 min-h-[50vh] md:min-h-[350px] pb-20 md:pb-0">
             {options.map((answer, index) => {
               // Classic Kahoot Colors: Red, Blue, Yellow (Orangeish), Green
               const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
@@ -207,6 +306,7 @@ function Host() {
                   className={`
                             w-full h-full rounded shadow-button flex items-center p-8 transition-all active:shadow-button-active active:translate-y-1
                             ${bgColors[index]}
+                            ${isWaitingForNext ? 'opacity-50 grayscale' : ''} 
                           `}
                 >
                   <span className="text-white/80 text-5xl mr-6 font-black">{icons[index]}</span>
@@ -215,6 +315,19 @@ function Host() {
               )
             })}
           </div>
+
+          {/* HOST CONTROLS - NEXT BUTTON */}
+          {isWaitingForNext && (
+            <div className="fixed bottom-10 z-50 animate-bounce-in">
+              <button
+                onClick={handleNextQuestion}
+                className="bg-white text-gray-900 border-4 border-gray-900 px-10 py-4 rounded-full font-black text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+              >
+                Next Question ➜
+              </button>
+            </div>
+          )}
+
         </div>
       )}
 

@@ -21,16 +21,44 @@ export default function Join() {
   const [answered, setAnswered] = useState(false);
   const [winner, setWinner] = useState();
   const [topPlayers, setTopPlayers] = useState([]);
+  const [isWaiting, setIsWaiting] = useState(false); // New state for waiting screen
+
+  useEffect(() => {
+    // Reconnection Logic
+    const storedRoom = sessionStorage.getItem('player_room');
+    const storedName = sessionStorage.getItem('player_name');
+
+    if (storedRoom && storedName) {
+      setRoom(storedRoom);
+      setName(storedName);
+      socket.emit('joinRoom', { room: storedRoom, name: storedName }, ({ users, room }) => {
+        setRoom(room);
+        setInfo(true);
+      });
+    }
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
     if (name && room) {
+      sessionStorage.setItem('player_room', room);
+      sessionStorage.setItem('player_name', name);
+
       socket.emit('joinRoom', { room, name }, ({ users, room }) => {
         setRoom(room);
         setInfo(true);
       });
     }
   }
+
+  const leaveGame = () => {
+    sessionStorage.removeItem('player_room');
+    sessionStorage.removeItem('player_name');
+    setInfo(false);
+    setRoom('');
+    setName('');
+    window.location.reload(); // Ensure clean state
+  };
 
   const handleAnswers = () => {
     navigate('/answers');
@@ -66,13 +94,20 @@ export default function Join() {
     socket.on('gameStarted', () => {
       setInfo(true);
     });
-    socket.on('newQuestion', ({ question }) => {
-      setQuestion(question.question);
-      setOptions(question.answers);
-      setSeconds(question.timer);
+    socket.on('newQuestion', (data) => {
+      console.log('[Join] Received newQuestion:', data);
+      const { question, answers, timer } = data;
+      setQuestion(question);
+      setOptions(answers);
+      setSeconds(timer);
       setAnswered(false);
       setSelectedAnswerIndex(null);
       setCorrectAnswerIndex(null);
+      setIsWaiting(false); // Start interacting
+    });
+
+    socket.on('questionEnded', () => {
+      setIsWaiting(true); // Show waiting screen
     });
 
     socket.on('gameOver', (data) => {
@@ -85,16 +120,22 @@ export default function Join() {
       socket.off('answerResult');
       socket.off('gameOver');
       socket.off('gameStarted');
+      socket.off('questionEnded');
     };
   }, []);
 
   useEffect(() => {
-    if (seconds === 0) return;
+    if (seconds === 0) {
+      if (!isWaiting && !answered && !correctAnswerIndex && question) {
+        setIsWaiting(true); // Auto-transition to waiting to prevent "stuck on 0"
+      }
+      return;
+    }
     const timeInterval = setInterval(() => {
       setSeconds((prevTime) => prevTime - 1);
     }, 1000);
     return () => clearInterval(timeInterval);
-  }, [seconds]);
+  }, [seconds, isWaiting, answered, correctAnswerIndex, question]);
 
   // Game Over Screen
   if (winner) {
@@ -193,7 +234,18 @@ export default function Join() {
         </div>
       </div>
 
-      {question ? (
+      {/* WAITING SCREEN */}
+      {isWaiting ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 pb-20">
+          <div className="w-full max-w-lg bg-white/10 backdrop-blur p-10 rounded-3xl border border-white/20 shadow-xl flex flex-col items-center animate-pulse">
+            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-4xl mb-6">
+              ⏳
+            </div>
+            <h2 className="text-3xl font-black text-white mb-2">Time's Up!</h2>
+            <p className="text-blue-100 font-bold text-lg">Waiting for the next question...</p>
+          </div>
+        </div>
+      ) : question ? (
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl mx-auto z-10">
           <div className="bg-white text-gray-900 w-full p-4 md:p-8 rounded shadow-card mb-8 text-center min-h-[100px] flex items-center justify-center">
             <h2 className="text-xl md:text-2xl font-black">{question}</h2>
@@ -235,15 +287,22 @@ export default function Join() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-center z-10">
-          <div className="w-full max-w-md bg-white rounded-xl shadow-card p-10 flex flex-col items-center">
-            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl mb-4 animate-bounce">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-card p-6 md:p-10 flex flex-col items-center">
+            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl mb-4 animate-bounce shadow-sm">
               👑
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2">You're in!</h2>
             <p className="text-gray-500 font-bold mb-8">See your name on screen?</p>
-            <div className="w-full bg-gray-100 p-3 rounded text-sm text-gray-500 font-bold uppercase tracking-wide">
+            <div className="w-full bg-gray-100 p-3 rounded text-sm text-gray-500 font-bold uppercase tracking-wide mb-6">
               Waiting for host
             </div>
+
+            <button
+              onClick={leaveGame}
+              className="px-6 py-2 rounded-full border-2 border-red-100 text-red-500 font-bold hover:bg-red-50 hover:border-red-200 transition-colors text-sm"
+            >
+              Leave Game
+            </button>
           </div>
         </div>
       )}

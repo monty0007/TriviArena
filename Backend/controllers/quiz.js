@@ -18,7 +18,7 @@ const createQuiz = async (req, res) => {
     const quiz = new Quiz({
         name,
         // backgroundImage,
-        // description,
+        description,
         creatorId,
         creatorName,
         // pointsPerQuestion,
@@ -125,6 +125,7 @@ const updateQuiz = async (req, res) => {
     const quiz = {
         _id: id,
         name,
+        description,
         numberOfQuestions,
         questionList,
     };
