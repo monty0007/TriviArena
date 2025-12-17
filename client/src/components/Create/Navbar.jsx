@@ -10,9 +10,9 @@ export default function Navbar(props) {
   let navigate = useNavigate()
   let location = useLocation()
 
-  const { mainQuestion, quiz, setQuiz, displayQuestion, setMainQuestion, setValidationError, setRoom } = useContext(Question)
+  const { mainQuestion, quiz, setQuiz, displayQuestion, setMainQuestion, setValidationError, setRoom, hasUnsavedChanges, setHasUnsavedChanges, markQuizAsSaved } = useContext(Question)
 
-  const handleSave = async () => {
+  const handleSave = async (checkConfirmation = true) => {
     // Check if the necessary fields are filled
     // 0. Initialize consolidated errors object
     let consolidatedErrors = {};
@@ -31,7 +31,7 @@ export default function Navbar(props) {
       // but we'll let the toast handle the blocking for empty list specifically.
       toast.error('Please add at least one question', { position: 'top-center' })
       setValidationError(consolidatedErrors); // Show settings errors if any
-      return
+      return false
     }
 
     let firstInvalidQuestion = null;
@@ -82,7 +82,7 @@ export default function Navbar(props) {
       }
 
       toast.error('Please fix the highlighted errors before saving.', { position: 'top-center' });
-      return;
+      return false;
     }
 
     // Clear errors if all good
@@ -107,59 +107,112 @@ export default function Navbar(props) {
     setQuiz(updatedQuiz)
 
     try {
-      const result = await Swal.fire({
-        title: 'Save Quiz?',
-        text: "Are you sure you want to save these changes?",
-        icon: 'question',
-        showCancelButton: false, // Removed Cancel button
-        showDenyButton: true,
-        confirmButtonText: 'Yes, Save it!',
-        denyButtonText: `Don't save`,
-        reverseButtons: true, // Puts confirmation on right, safer
-        focusConfirm: false,
-        background: '#ffffff',
-        backdrop: `rgba(28, 25, 23, 0.4)`, // slight dark overlay
-        customClass: {
-          popup: 'rounded-2xl shadow-xl border border-gray-100 font-sans',
-          title: 'text-2xl font-black text-gray-800',
-          htmlContainer: 'text-gray-600',
-          confirmButton: 'bg-[#46178f] hover:bg-[#3d1380] text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
-          denyButton: 'bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
-          // cancelButton removed
-          actions: 'gap-4 w-full flex justify-center mt-4'
-        }
-      })
-
-      if (result.isConfirmed) {
-        if (quiz._id) {
-          // console.log('Updating quiz with id: ', quiz._id)
-          await updateQuiz(quiz._id, updatedQuiz)
-          toast.success('Quiz Updated Successfully! 🚀', { position: 'top-right' })
-        } else {
-          // console.log('Creating new quiz')
-          await createQuiz(updatedQuiz)
-          toast.success('Quiz Created Successfully! 🎉', { position: 'top-right' })
-        }
-      } else if (result.isDenied) {
-        Swal.fire({
-          title: 'Changes Discarded',
-          icon: 'info',
-          timer: 1500,
-          showConfirmButton: false,
+      if (checkConfirmation) {
+        const result = await Swal.fire({
+          title: 'Save Quiz?',
+          text: "Are you sure you want to save these changes?",
+          icon: 'question',
+          showCancelButton: false, // Removed Cancel button
+          showDenyButton: true,
+          confirmButtonText: 'Yes, Save it!',
+          denyButtonText: `Don't save`,
+          reverseButtons: true, // Puts confirmation on right, safer
+          focusConfirm: false,
+          background: '#ffffff',
+          backdrop: `rgba(28, 25, 23, 0.4)`, // slight dark overlay
           customClass: {
-            popup: 'rounded-2xl font-sans'
+            popup: 'rounded-2xl shadow-xl border border-gray-100 font-sans',
+            title: 'text-2xl font-black text-gray-800',
+            htmlContainer: 'text-gray-600',
+            confirmButton: 'bg-[#46178f] hover:bg-[#3d1380] text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
+            denyButton: 'bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg px-6 py-3 shadow-md hover:shadow-lg transition-all',
+            // cancelButton removed
+            actions: 'gap-4 w-full flex justify-center mt-4'
           }
         })
+
+        if (result.isDenied) {
+          Swal.fire({
+            title: 'Changes Discarded',
+            icon: 'info',
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: {
+              popup: 'rounded-2xl font-sans'
+            }
+          })
+          return false
+        }
+
+        // If dismissed (clicked outside), return false
+        if (!result.isConfirmed && !result.isDenied) return false;
       }
+
+      // Proceed to save (either confirmed or checkConfirmation=false)
+      if (quiz._id) {
+        // console.log('Updating quiz with id: ', quiz._id)
+        await updateQuiz(quiz._id, updatedQuiz)
+        toast.success('Quiz Updated Successfully! 🚀', { position: 'top-right' })
+      } else {
+        // console.log('Creating new quiz')
+        await createQuiz(updatedQuiz)
+        toast.success('Quiz Created Successfully! 🎉', { position: 'top-right' })
+      }
+
+      if (typeof markQuizAsSaved === 'function') {
+        markQuizAsSaved(); // <--- Update baseline
+      } else {
+        setHasUnsavedChanges(false); // Fallback
+      }
+      return true;
+
     } catch (error) {
       toast.error('Error saving quiz. Please try again.', { position: 'top-center' })
       console.error('Error saving quiz:', error)
+      return false;
     }
   }
 
-  const handleHost = () => {
+  const handleHost = async () => {
     // console.log("Handle Host Clicked");
     // console.log("MainQuestion:", mainQuestion);
+
+    // 1. Unsaved Changes Check
+    if (hasUnsavedChanges) {
+      const result = await Swal.fire({
+        title: 'Unsaved Changes!',
+        text: "You have unsaved changes. Do you want to save before hosting?",
+        icon: 'warning',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Save & Host',
+        denyButtonText: 'Host Without Saving',
+        confirmButtonColor: '#46178f',
+        denyButtonColor: '#6b7280',
+        cancelButtonColor: '#ef4444',
+        customClass: {
+          popup: 'rounded-2xl shadow-xl font-sans',
+          title: 'font-black text-gray-800',
+          actions: 'gap-2',
+          confirmButton: 'font-bold rounded-lg px-4 py-2',
+          denyButton: 'font-bold rounded-lg px-4 py-2',
+          cancelButton: 'font-bold rounded-lg px-4 py-2'
+        }
+      });
+
+      if (result.isConfirmed) {
+        // User wants to save first
+        const saved = await handleSave(false); // false = skip second confirmation
+        if (!saved) return; // Save failed or invalid, don't host
+        // Fall through to host logic below if save succeeded
+      } else if (result.isDenied) {
+        // User wants to proceed anyway
+        // Fall through to host logic below
+      } else {
+        // Cancel logic
+        return;
+      }
+    }
 
     if (!mainQuestion || mainQuestion.length === 0) {
       // console.log("Validation Failed: No questions");
@@ -198,20 +251,20 @@ export default function Navbar(props) {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/dashboard')}>
             {/* <img className="h-8 w-auto" src="quiz.png" alt="Logo" /> */}
-            <h1 className="text-2xl font-black text-[#46178f] tracking-tight">TriviArena</h1>
+            <h1 className="text-xl md:text-2xl font-black text-[#46178f] tracking-tight">TriviArena</h1>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 md:space-x-4">
             {location.pathname === '/create' && (
               <>
                 <button
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base rounded font-bold transition-all"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 md:px-4 md:py-2 text-xs md:text-base rounded-md font-bold transition-all h-10 flex items-center justify-center whitespace-nowrap"
                   onClick={handleSave}
                 >
                   Save
                 </button>
                 <button
-                  className="bg-[#46178f] hover:bg-[#3d1380] text-white px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base rounded font-bold transition-all shadow-button hover:shadow-lg"
+                  className="bg-[#46178f] hover:bg-[#3d1380] text-white px-3 py-2 md:px-4 md:py-2 text-xs md:text-base rounded-md font-bold transition-all shadow-button hover:shadow-lg h-10 flex items-center justify-center whitespace-nowrap"
                   onClick={handleHost}
                 >
                   Host Game
@@ -223,7 +276,7 @@ export default function Navbar(props) {
             {/* Sample Button moved to Dashboard Header */}
 
             <button
-              className="text-gray-500 hover:text-[#46178f] font-bold transition-colors px-2 py-1 md:px-3 md:py-2 text-sm md:text-base"
+              className="text-gray-500 hover:text-[#46178f] font-bold transition-colors px-2 py-1 md:px-3 md:py-2 text-sm md:text-base whitespace-nowrap"
               onClick={routeChange}
             >
               Back

@@ -105,12 +105,13 @@ function Mainpage() {
         </div>
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight leading-tight animate-fade-in-up delay-100 drop-shadow-md">
-          Master the Art of <br />
+          Your Quiz Playground <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-white to-purple-200">Trivia Gaming</span>
         </h1>
 
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-blue-100 font-medium leading-relaxed mb-12 animate-fade-in-up delay-200">
-          The ultimate platform for hosts and players. Create custom quizzes, join live lobbies, and compete for the top spot in real-time.
+          Make quizzes. Join games. Beat your friends.
+          All in real-time, all in one place.
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-fade-in-up delay-300 w-full max-w-md md:max-w-none">

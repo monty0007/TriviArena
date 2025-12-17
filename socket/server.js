@@ -298,6 +298,38 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('endGame', ({ room }, callback) => {
+    const roomData = rooms[room];
+    // Security check: Only host can end game
+    if (roomData && roomData.admin.socketId === socket.id) {
+      console.log(`[Room ${room}] Host ending game.`);
+
+      // Notify all players
+      io.to(room).emit('gameTerminated', { reason: 'Host ended the game' });
+
+      // Clean up room immediately or on delay?
+      // Let's keep it for a moment so clients receive the event, then delete.
+      // Actually, if we delete immediately, subsequent calls might fail.
+      // Let's set a state.
+      roomData.gameState = GAME_STATES.GAME_OVER;
+
+      // Optional: Clear any timers
+      if (roomData.questionTimeout) clearTimeout(roomData.questionTimeout);
+
+      // Clean up after short delay to allow message propagation
+      setTimeout(() => {
+        if (rooms[room]) {
+          delete rooms[room];
+          activeRoomCodes.delete(room);
+        }
+      }, 5000);
+
+      if (callback) callback({ status: 'ok' });
+    } else {
+      if (callback) callback({ status: 'error', message: 'Unauthorized or room not found' });
+    }
+  });
+
   socket.on('disconnect', () => {
     // Cleanup player from rooms
     for (const room in rooms) {

@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://triviarena-socketserver.onrender.com');
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 export default function Join() {
   const navigate = useNavigate();
@@ -26,6 +26,7 @@ export default function Join() {
   const [autoCountdown, setAutoCountdown] = useState(null); // Countdown for auto-advance
   const [quizHistory, setQuizHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isGameTerminated, setIsGameTerminated] = useState(false); // NEW: Game terminated by host
 
   /* REMOVED AUTO-RECONNECT LOGIC */
 
@@ -48,6 +49,7 @@ export default function Join() {
     setInfo(false);
     setRoom('');
     setName('');
+    setIsGameTerminated(false);
     window.location.reload(); // Ensure clean state
   };
 
@@ -167,13 +169,35 @@ export default function Join() {
       setQuizHistory(data.history || []);
     });
 
+    socket.on('gameTerminated', () => {
+      setIsGameTerminated(true);
+      setInfo(false); // Move out of active game loop in terms of data, but render specific screen
+      setQuestion('');
+      sessionStorage.clear(); // Clear session immediately
+    });
+
     return () => {
       socket.off('newQuestion');
       socket.off('answerResult');
       socket.off('gameOver');
       socket.off('gameStarted');
+      socket.off('gameStarted');
       socket.off('questionEnded');
+      socket.off('gameTerminated');
+      // Host Disconnect logic handled in separate effect
     };
+  }, []);
+
+  useEffect(() => {
+    socket.on('hostDisconnected', () => {
+      toast.info("The host has ended the session. Please enter a new code.", { position: 'top-center', autoClose: 4000 });
+      sessionStorage.removeItem('player_room');
+      sessionStorage.removeItem('player_name');
+      setInfo(false);
+      setRoom('');
+      setName('');
+    });
+    return () => socket.off('hostDisconnected');
   }, []);
 
   // Game Over Screen
@@ -254,6 +278,30 @@ export default function Join() {
   }
 
   // Join Screen
+  if (isGameTerminated) {
+    return (
+      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 text-center font-sans">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-card p-10 flex flex-col items-center animate-fade-in-up">
+          <div className="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-5xl mb-6 shadow-sm border-4 border-red-50">
+            🛑
+          </div>
+          <h2 className="text-3xl font-black text-gray-900 mb-2">Game Ended</h2>
+          <p className="text-gray-500 font-bold mb-8 text-lg px-4 leading-relaxed">
+            The admin has ended the game.<br />
+            <span className="text-sm text-gray-400 font-medium mt-2 block">Please ask for a new PIN to join.</span>
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-button active:translate-y-1 active:shadow-button-active transition-all text-xl flex items-center justify-center gap-2"
+          >
+            <span>🔄</span> Join New Game
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (!info) {
     return (
       <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 relative font-sans">

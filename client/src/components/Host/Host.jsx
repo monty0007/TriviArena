@@ -2,11 +2,13 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Question } from '../../context/QuestionContext';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import { FiUser } from 'react-icons/fi';
+import { FiUser, FiCopy } from 'react-icons/fi';
 import { IoMdTime } from "react-icons/io";
 import Confetti from 'react-confetti';
+import Swal from 'sweetalert2'
+import { toast } from 'react-toastify'; // Ensure toast is imported if used
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://triviarena-socketserver.onrender.com', { autoConnect: false });
+const socket = io(import.meta.env.VITE_SOCKET_URL, { autoConnect: false });
 
 function Host() {
   const [isLoading, setIsLoading] = useState(false);
@@ -192,6 +194,42 @@ function Host() {
     setIsWaitingForNext(false); // Optimistic update
   };
 
+  const handleEndGame = () => {
+    // 1. Get robust room ID (Context or Session)
+    const roomToEmit = room || sessionStorage.getItem('host_room');
+
+    if (!roomToEmit) {
+      navigate('/create');
+      return;
+    }
+
+    // Navigate immediately if socket not connected or fall back
+    let isNavigated = false;
+    const safeNavigate = () => {
+      if (!isNavigated) {
+        isNavigated = true;
+        navigate('/create');
+      }
+    };
+
+    if (socket.connected) {
+      socket.emit('endGame', { room: roomToEmit }, (response) => {
+        // Optional: check response.status
+        safeNavigate();
+      });
+      // Fallback if server doesn't respond quickly
+      setTimeout(safeNavigate, 1000);
+    } else {
+      safeNavigate();
+    }
+  };
+
+  const handleCopyPin = () => {
+    navigator.clipboard.writeText(room);
+    toast.success('PIN copied to clipboard!', { position: 'top-center', autoClose: 1000 });
+  };
+
+
   // Winner Screen
   // Winner Screen
   // Winner Screen
@@ -203,12 +241,13 @@ function Host() {
         {/* Navigation - Top Left Back Button */}
         <nav className="absolute top-0 left-0 w-full p-6 z-50 flex justify-start items-center pointer-events-none">
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/create')}
             className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20 backdrop-blur-sm"
           >
             <span>←</span> Back
           </button>
         </nav>
+
 
         {/* Header - Transparent on Background */}
         <div className="mb-16 md:mb-24 text-center z-10 pt-8 animate-fade-in-down">
@@ -330,24 +369,41 @@ function Host() {
         <div className="absolute bottom-10 right-10 text-9xl text-white transform rotate-12">!</div>
       </div>
 
-      {/* Navigation - Top Left Back Button */}
-      <nav className="absolute top-0 left-0 w-full p-6 z-50 flex justify-start items-center pointer-events-none">
-        <button
-          onClick={() => {
-            if (window.confirm('Are you sure you want to leave? This will end the session for everyone.')) {
-              navigate('/dashboard');
-            }
-          }}
-          className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20 backdrop-blur-sm"
-        >
-          <span>←</span> Back
-        </button>
-      </nav>
+      {/* Navigation - Top Bar (Lobby Only) */}
+      {!isQuestionActive && (
+        <nav className="absolute top-0 left-0 w-full p-6 z-50 flex justify-between items-start md:items-center pointer-events-none">
+          <button
+            onClick={() => {
+              Swal.fire({
+                title: 'Leave Game?',
+                text: "This will end the session for everyone. Are you sure?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, End Session',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                  popup: 'rounded-2xl shadow-xl font-sans',
+                  title: 'text-xl font-black text-gray-800'
+                }
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  handleEndGame();
+                }
+              })
+            }}
+            className="pointer-events-auto text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20 backdrop-blur-sm"
+          >
+            <span>←</span> Back
+          </button>
+        </nav>
+      )}
 
-      {/* Top Header Row (PIN / Users) only in Lobby or small in game */}
+      {/* Main Content */}
       {!isQuestionActive ? (
         // LOBBY STATE
-        <div className="z-10 w-full max-w-6xl flex flex-col h-[85vh] bg-white rounded-3xl shadow-card overflow-hidden">
+        <div className="z-10 w-full max-w-6xl flex flex-col h-[85vh] bg-white rounded-3xl shadow-card overflow-hidden mt-16 md:mt-0">
           <div className="bg-white p-6 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="flex flex-col">
               <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Join at</span>
@@ -355,7 +411,16 @@ function Host() {
             </div>
             <div className="flex flex-col items-center md:items-end">
               <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Game PIN</span>
-              <span className="text-5xl md:text-6xl font-black text-gray-900 tracking-wider">{isLoading ? '...' : room}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-5xl md:text-6xl font-black text-gray-900 tracking-wider">{isLoading ? '...' : room}</span>
+                <button
+                  onClick={handleCopyPin}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
+                  title="Copy PIN"
+                >
+                  <FiCopy size={24} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -403,32 +468,80 @@ function Host() {
         // GAME ACTIVE STATE
         <div className="z-10 w-full max-w-7xl flex flex-col h-full items-center">
 
-          <div className="flex justify-between items-center w-full mb-6 text-white font-bold">
-            <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">{answerCount} Answered</div>
-            <div className="text-center">TriviArena</div>
-            <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-full">PIN: {room}</div>
+          {/* Active Game Header - Integrated Layout */}
+          <div className="flex flex-wrap justify-between items-center w-full mb-6 text-white font-bold gap-2">
+
+            {/* Left: Answer Count */}
+            <div className="bg-white/20 backdrop-blur px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-base whitespace-nowrap">
+              {answerCount} Answered
+            </div>
+
+            {/* Center: Title (Desktop) or Spacer */}
+            <div className="hidden md:block text-center flex-1">TriviArena</div>
+
+            {/* Right Group: PIN & End Game */}
+            <div className="flex items-center gap-2 md:gap-3 ml-auto">
+              <div className="bg-white/20 backdrop-blur px-3 py-1 md:px-4 md:py-2 rounded-full flex items-center gap-2 text-xs md:text-base whitespace-nowrap">
+                PIN: {room}
+                <button
+                  onClick={handleCopyPin}
+                  className="hover:text-blue-200 transition-colors"
+                  title="Copy PIN"
+                >
+                  <FiCopy />
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  Swal.fire({
+                    title: 'End Session?',
+                    text: "This will kick all players and close the room.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#3b82f6',
+                    confirmButtonText: 'End Game',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                      popup: 'rounded-2xl shadow-xl font-sans',
+                      title: 'text-xl font-black text-gray-800'
+                    }
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      handleEndGame();
+                    }
+                  })
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 md:px-5 md:py-2 rounded-full font-bold text-xs md:text-base shadow-lg border border-red-400 hover:scale-105 active:scale-95 transition-all flex items-center gap-1 md:gap-2 whitespace-nowrap"
+              >
+                <span className="hidden md:inline">End Game</span>
+                <span className="md:hidden">End</span>
+                <span>🛑</span>
+              </button>
+            </div>
           </div>
 
           <div className="bg-white text-gray-900 w-full p-4 md:p-10 rounded shadow-card mb-4 md:mb-8 text-center min-h-[150px] md:min-h-[180px] flex items-center justify-center relative">
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black leading-tight">{question}</h2>
+            <h2 className="text-xl md:text-4xl lg:text-5xl font-black leading-tight break-words max-w-full">{question}</h2>
 
             {/* Timer Circle - Responsive Positioning */}
             {!isWaitingForNext && (
-              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
-                <span className="text-2xl md:text-3xl font-black text-white">{seconds}</span>
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-16 h-16 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+                <span className="text-xl md:text-3xl font-black text-white">{seconds}</span>
               </div>
             )}
 
             {/* Show 'Time Up' or Status when waiting OR when timer hits 0 locally */}
             {(isWaitingForNext || seconds === 0) && (
-              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-red-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
-                <span className="text-xs md:text-sm font-black text-white uppercase">Time Up</span>
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-16 h-16 md:w-24 md:h-24 bg-red-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+                <span className="text-xs md:text-sm font-black text-white uppercase text-center leading-tight">Time<br />Up</span>
               </div>
             )}
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full flex-1 min-h-[50vh] md:min-h-[350px] pb-20 md:pb-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full flex-1 min-h-[40vh] md:min-h-[350px] pb-24 md:pb-0">
             {options.map((answer, index) => {
               // Classic Kahoot Colors: Red, Blue, Yellow (Orangeish), Green
               const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
@@ -437,13 +550,13 @@ function Host() {
                 <div
                   key={index}
                   className={`
-                            w-full h-full rounded shadow-button flex items-center p-8 transition-all active:shadow-button-active active:translate-y-1
+                            w-full h-full rounded shadow-button flex items-center p-4 md:p-8 transition-all active:shadow-button-active active:translate-y-1
                             ${bgColors[index]}
                             ${isWaitingForNext ? 'opacity-50 grayscale' : ''} 
                           `}
                 >
-                  <span className="text-white/80 text-5xl mr-6 font-black">{icons[index]}</span>
-                  <span className="text-white text-3xl font-bold">{answer}</span>
+                  <span className="text-white/80 text-3xl md:text-5xl mr-4 md:mr-6 font-black">{icons[index]}</span>
+                  <span className="text-white text-xl md:text-3xl font-bold break-words">{answer}</span>
                 </div>
               )
             })}
@@ -451,20 +564,20 @@ function Host() {
 
           {/* HOST CONTROLS - NEXT BUTTON or AUTO COUNTDOWN */}
           {isWaitingForNext && (
-            <div className="fixed bottom-10 z-50 animate-bounce-in">
+            <div className="fixed bottom-6 md:bottom-10 z-50 animate-bounce-in w-full px-4 flex justify-center">
               {autoCountdown ? (
-                <div className="bg-white/90 backdrop-blur border-4 border-purple-500 text-purple-700 px-10 py-4 rounded-full font-black text-2xl shadow-xl flex items-center gap-3 animate-pulse">
-                  <span>⏳</span> Next Question in {autoCountdown}...
+                <div className="bg-white/90 backdrop-blur border-4 border-purple-500 text-purple-700 px-6 py-3 md:px-10 md:py-4 rounded-full font-black text-lg md:text-2xl shadow-xl flex items-center gap-3 animate-pulse whitespace-nowrap">
+                  <span>⏳</span> <span className="hidden md:inline">Next Question in</span> {autoCountdown}...
                 </div>
               ) : (
                 <button
                   onClick={handleNextQuestion}
                   className={`
-                    bg-white text-gray-900 border-4 border-gray-900 px-10 py-4 rounded-full font-black text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3
+                    bg-white text-gray-900 border-4 border-gray-900 px-6 py-3 md:px-10 md:py-4 rounded-full font-black text-lg md:text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 whitespace-nowrap
                     ${isLastQuestion ? 'bg-yellow-300 border-yellow-500 text-yellow-900' : ''}
                   `}
                 >
-                  {isLastQuestion ? 'View Results 🏆' : 'Next Question ➜'}
+                  {isLastQuestion ? 'View Results 🏆' : 'Next ➜'}
                 </button>
               )}
             </div>
