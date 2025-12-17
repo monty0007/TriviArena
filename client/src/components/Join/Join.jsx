@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
+import { FiX, FiArrowLeft } from 'react-icons/fi';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
@@ -21,14 +22,12 @@ export default function Join() {
   const [answered, setAnswered] = useState(false);
   const [winner, setWinner] = useState();
   const [topPlayers, setTopPlayers] = useState([]);
-  const [isWaiting, setIsWaiting] = useState(false); // New state for waiting screen
-  const [isWaitingForResults, setIsWaitingForResults] = useState(false); // NEW: Waiting for final results
-  const [autoCountdown, setAutoCountdown] = useState(null); // Countdown for auto-advance
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [isWaitingForResults, setIsWaitingForResults] = useState(false);
+  const [autoCountdown, setAutoCountdown] = useState(null);
   const [quizHistory, setQuizHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [isGameTerminated, setIsGameTerminated] = useState(false); // NEW: Game terminated by host
-
-  /* REMOVED AUTO-RECONNECT LOGIC */
+  const [isGameTerminated, setIsGameTerminated] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -50,7 +49,7 @@ export default function Join() {
     setRoom('');
     setName('');
     setIsGameTerminated(false);
-    window.location.reload(); // Ensure clean state
+    window.location.reload();
   };
 
   const handleAnswers = () => {
@@ -60,8 +59,6 @@ export default function Join() {
   const handleAnswer = (answerIndex) => {
     if (!answered) {
       setSelectedAnswerIndex(answerIndex);
-      // Determine correction locally for immediate feedback if possible, or wait for server logic
-      // But preserving original logic which alerts based on server response via callback
       socket.emit('submitAnswer', room, '', answerIndex, (data) => {
         if (data.isCorrect) {
           toast.success(`Correct! +${data.points || 'Points'}`, { position: 'top-center', autoClose: 2000 });
@@ -87,16 +84,10 @@ export default function Join() {
 
       if (remaining <= 0) {
         setSeconds(0);
-        // Only trigger waiting if we haven't answered and aren't already waiting
-        if (!isWaiting && !answered && !correctAnswerIndex && question) {
-          // We let the useEffect dependency on 'seconds' handle the transition or valid here
-          // But actually checking 'seconds === 0' in another effect is safer 
-          // to trigger shared logic.
-        }
       } else {
         setSeconds(remaining);
       }
-    }, 200); // Check 5 times a second for better precision
+    }, 200);
 
     return () => clearInterval(timerInterval);
   }, [endTime, isWaiting, answered, correctAnswerIndex, question]);
@@ -108,7 +99,6 @@ export default function Join() {
     }
   }, [seconds, isWaiting, answered, correctAnswerIndex, question]);
 
-  // Listen for Server Events
   useEffect(() => {
     socket.on('message', (message) => {
       toast.info(message, { position: 'top-right', autoClose: 3000 });
@@ -125,9 +115,6 @@ export default function Join() {
       const { question, answers, timer } = data;
       setQuestion(question);
       setOptions(answers);
-      // Synchronize time: Current Time + Timer Duration
-      // We assume negligible network latency or that server adds grace period.
-      // Server gives 1s grace, so we aim to finish slightly before/at server limit.
       const durationMs = timer * 1000;
       setEndTime(Date.now() + durationMs);
       setSeconds(timer);
@@ -136,17 +123,16 @@ export default function Join() {
       setSelectedAnswerIndex(null);
       setCorrectAnswerIndex(null);
       setIsWaiting(false);
-      setAutoCountdown(null); // Reset countdown
+      setAutoCountdown(null);
     });
 
     socket.on('questionEnded', ({ isLastQuestion, autoAdvance, nextQuestionDelay } = {}) => {
-      setEndTime(null); // Stop local timer
-      setSeconds(0); // Force display to 0
+      setEndTime(null);
+      setSeconds(0);
       setIsWaiting(true);
       if (isLastQuestion) setIsWaitingForResults(true);
 
       if (autoAdvance && nextQuestionDelay) {
-        // Start Countdown (e.g., 4000ms -> 3s display)
         let c = Math.floor(nextQuestionDelay / 1000) - 1;
         if (c < 1) c = 3;
         setAutoCountdown(c);
@@ -171,9 +157,9 @@ export default function Join() {
 
     socket.on('gameTerminated', () => {
       setIsGameTerminated(true);
-      setInfo(false); // Move out of active game loop in terms of data, but render specific screen
+      setInfo(false);
       setQuestion('');
-      sessionStorage.clear(); // Clear session immediately
+      sessionStorage.clear();
     });
 
     return () => {
@@ -181,10 +167,8 @@ export default function Join() {
       socket.off('answerResult');
       socket.off('gameOver');
       socket.off('gameStarted');
-      socket.off('gameStarted');
       socket.off('questionEnded');
       socket.off('gameTerminated');
-      // Host Disconnect logic handled in separate effect
     };
   }, []);
 
@@ -312,7 +296,7 @@ export default function Join() {
             onClick={() => navigate('/')}
             className="text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20"
           >
-            <span>←</span> Back
+            <FiArrowLeft size={20} /> Back
           </button>
         </nav>
 
@@ -362,36 +346,38 @@ export default function Join() {
     <div className="min-h-screen bg-[#2563eb] flex flex-col p-4 relative font-sans">
       <ToastContainer />
 
-      <div className="flex justify-between items-center mb-6 z-10 w-full max-w-4xl mx-auto text-white">
+      <div className="flex justify-between items-center mb-6 z-10 w-full max-w-6xl mx-auto text-white">
         <div className="font-bold hidden md:block">
           <span className="opacity-70">PIN:</span> {room}
         </div>
-        <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full">
+        <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full border border-white/10">
           {name}
         </div>
         <div className="flex items-center gap-3">
-          <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full flex items-center gap-2">
-            <span>{seconds}</span>
-          </div>
+          {!isWaiting && seconds !== '' && (
+            <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full flex items-center gap-2 border border-white/10">
+              <span>{seconds}s</span>
+            </div>
+          )}
           <button
             onClick={leaveGame}
-            className="bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full font-bold text-xs uppercase tracking-wide transition-all shadow-sm"
+            className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full font-bold transition-all shadow-sm border border-white/10 backdrop-blur-sm active:scale-95"
             title="Leave Game"
           >
-            ✕
+            <FiX size={24} />
           </button>
         </div>
       </div>
 
       {/* WAITING SCREEN */}
       {isWaiting ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 pb-20">
-          <div className="w-full max-w-lg bg-white/10 backdrop-blur p-10 rounded-3xl border border-white/20 shadow-xl flex flex-col items-center animate-pulse">
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl mb-6 ${isWaitingForResults ? 'bg-yellow-400/20 text-yellow-300' : 'bg-white/20'}`}>
+        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 w-full h-full pb-10">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-xl animate-pulse">
+            <div className={`w-32 h-32 rounded-full flex items-center justify-center text-6xl mb-8 ${isWaitingForResults ? 'bg-yellow-400/20 text-yellow-300' : 'bg-white/20 shadow-inner'}`}>
               {isWaitingForResults ? '🏆' : (autoCountdown ? '⏱️' : '⏳')}
             </div>
-            <h2 className="text-3xl font-black text-white mb-2">{isWaitingForResults ? 'Quiz Completed!' : "Time's Up!"}</h2>
-            <p className="text-blue-100 font-bold text-lg">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">{isWaitingForResults ? 'Quiz Completed!' : "Time's Up!"}</h2>
+            <p className="text-blue-100 font-bold text-xl md:text-2xl max-w-2xl leading-relaxed">
               {isWaitingForResults ? 'Waiting for host to show results...' : (
                 autoCountdown ? `Next question in ${autoCountdown}...` : 'Waiting for the next question...'
               )}
@@ -399,14 +385,14 @@ export default function Join() {
           </div>
         </div>
       ) : question ? (
-        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl mx-auto z-10">
-          <div className="bg-white text-gray-900 w-full p-4 md:p-8 rounded shadow-card mb-8 text-center min-h-[100px] flex items-center justify-center">
-            <h2 className="text-xl md:text-2xl font-black">{question}</h2>
+        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto z-10">
+          <div className="bg-white text-gray-900 w-full p-6 md:p-10 rounded-2xl shadow-card mb-6 text-center min-h-[120px] md:min-h-[160px] flex items-center justify-center transform transition-all hover:scale-[1.01]">
+            <h2 className="text-xl md:text-3xl font-black leading-snug">{question}</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-[350px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full flex-grow max-h-[60vh]">
             {options.map((answer, index) => {
-              const bgColors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
+              const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
               const icons = ['▲', '◆', '●', '■'];
               const isSelected = selectedAnswerIndex === index;
               const isCorrect = correctAnswerIndex === index;
@@ -417,42 +403,43 @@ export default function Join() {
                   onClick={() => handleAnswer(index)}
                   disabled={answered}
                   className={`
-                            relative w-full h-full rounded shadow-button flex items-center p-6 transition-all active:scale-95 disabled:cursor-not-allowed
+                            relative w-full h-full rounded-2xl shadow-button flex items-center p-6 transition-all active:scale-[0.98] disabled:cursor-not-allowed
                             ${bgColors[index]}
-                            ${answered && !isSelected ? 'opacity-50' : ''}
+                            ${answered && !isSelected ? 'opacity-50 grayscale-[0.5]' : ''}
+                            ${isSelected ? 'ring-4 ring-white/50 scale-[1.02] z-10' : ''}
                           `}
                 >
-                  <span className="text-white/60 text-4xl mr-4">{icons[index]}</span>
-                  <span className="text-white text-xl font-bold text-left leading-tight">{answer}</span>
+                  <span className="text-white/60 text-4xl md:text-5xl mr-6 font-black">{icons[index]}</span>
+                  <span className="text-white text-xl md:text-3xl font-bold text-left leading-tight">{answer}</span>
 
-                  {isCorrect && <div className="absolute top-2 right-2 bg-white text-green-600 rounded-full p-1 text-sm font-bold shadow">✓</div>}
-                  {answered && isSelected && !isCorrect && correctAnswerIndex !== null && <div className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 text-sm font-bold shadow">✕</div>}
+                  {isCorrect && <div className="absolute top-4 right-4 bg-white text-green-600 rounded-full p-2 text-xl font-bold shadow-lg transform rotate-12">✓</div>}
+                  {answered && isSelected && !isCorrect && correctAnswerIndex !== null && <div className="absolute top-4 right-4 bg-white text-red-500 rounded-full p-2 text-xl font-bold shadow-lg transform rotate-12">✕</div>}
                 </button>
               )
             })}
           </div>
 
           {answered && !correctAnswerIndex && (
-            <div className="mt-8 bg-black/20 text-white px-6 py-2 rounded-full font-bold animate-pulse">
-              Answer submitted! Good luck!
+            <div className="mt-8 bg-black/30 backdrop-blur text-white px-8 py-3 rounded-full font-bold animate-pulse text-lg border border-white/10">
+              Answer submitted! Good luck! 🤞
             </div>
           )}
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-center z-10">
-          <div className="w-full max-w-md bg-white rounded-xl shadow-card p-6 md:p-10 flex flex-col items-center">
-            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl mb-4 animate-bounce shadow-sm">
+        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 w-full h-full">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-xl">
+            <div className="w-32 h-32 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-6xl mb-6 animate-bounce shadow-lg ring-8 ring-blue-500/20">
               👑
             </div>
-            <h2 className="text-2xl font-black text-gray-900 mb-2">You're in!</h2>
-            <p className="text-gray-500 font-bold mb-8">See your name on screen?</p>
-            <div className="w-full bg-gray-100 p-3 rounded text-sm text-gray-500 font-bold uppercase tracking-wide mb-6">
-              Waiting for host
+            <h2 className="text-4xl font-black text-white mb-4 drop-shadow-sm">You're in!</h2>
+            <p className="text-blue-100 font-bold mb-10 text-xl">See your name on screen?</p>
+            <div className="w-full max-w-sm bg-white/90 p-4 rounded-xl text-lg text-blue-900 font-black uppercase tracking-widest mb-12 shadow-lg animate-pulse">
+              Waiting for host...
             </div>
 
             <button
               onClick={leaveGame}
-              className="px-6 py-2 rounded-full border-2 border-red-100 text-red-500 font-bold hover:bg-red-50 hover:border-red-200 transition-colors text-sm"
+              className="px-8 py-3 rounded-full border-2 border-red-300/50 text-red-100 font-bold hover:bg-red-500/20 hover:border-red-300 transition-all text-sm uppercase tracking-wide"
             >
               Leave Game
             </button>
@@ -462,5 +449,3 @@ export default function Join() {
     </div>
   );
 }
-
-

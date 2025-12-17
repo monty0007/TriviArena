@@ -1,5 +1,6 @@
 // const API_BASE_URL = "https://backend-kahoot-3.onrender.com/api";
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const envUrl = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
 // const API_BASE_URL = "https://backend-kahoot-3.onrender.com/api";
 
 
