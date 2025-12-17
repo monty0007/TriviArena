@@ -61,12 +61,12 @@ function Dashboard() {
       await auth.signOut()
       navigate('/login')
     } catch (error) {
-      console.log('Error logging out: ', error.message)
+      // console.log('Error logging out: ', error.message)
     }
   }
 
   const handleCreate = async () => {
-    console.log("Create New Quiz clicked");
+    // console.log("Create New Quiz clicked");
 
     // Use userDetails (state) as primary source, fallback to auth.currentUser
     const currentUser = userDetails || auth.currentUser;
@@ -156,16 +156,16 @@ function Dashboard() {
         dateCreated: new Date().toISOString()
       };
 
-      console.log("[CreateSample] Payload:", newQuizData);
+      // console.log("[CreateSample] Payload:", newQuizData);
 
       // 3. Create via API
       const result = await createQuiz(newQuizData);
-      console.log("[CreateSample] API Result:", result);
+      // console.log("[CreateSample] API Result:", result);
 
       // 4. Refresh List with slight delay to ensure DB write
       setTimeout(async () => {
         const fetchedQuizzes = await fetchTeacherQuizes(user.uid);
-        console.log("[CreateSample] Refetched Quizzes:", fetchedQuizzes);
+        // console.log("[CreateSample] Refetched Quizzes:", fetchedQuizzes);
         setQuizzes(fetchedQuizzes);
 
         // Update toast and reset state

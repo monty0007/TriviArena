@@ -19,7 +19,7 @@ function Register() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
-      console.log(user);
+      // console.log(user);
 
       if (user) {
         const userData = {
@@ -30,7 +30,7 @@ function Register() {
         };
 
         const dataRecieved = await createUser(userData);
-        console.log(dataRecieved);
+        // console.log(dataRecieved);
       }
 
       setQuiz(prevQuiz => ({
@@ -38,14 +38,14 @@ function Register() {
         creatorId: user.uid,
       }));
 
-      console.log("User Registered Successfully");
+      // console.log("User Registered Successfully");
       toast.success("User Registered Successfully", { position: "top-center" });
       setEmail("");
       setPassword("");
       setFname("");
       setLname("");
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
       toast.error(error.message, { position: "bottom-center" });
     }
   };

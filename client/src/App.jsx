@@ -26,14 +26,6 @@ function App() {
     return unsubscribe
   }, [])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-blue-600 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
-      </div>
-    )
-  }
-
   const routes = [
     {
       path: '/',
@@ -73,6 +65,15 @@ function App() {
   ]
 
   const Component = useRoutes(routes)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-blue-600 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
+      </div>
+    )
+  }
+
   return (
     <>
       {Component}

@@ -1,5 +1,5 @@
 // const API_BASE_URL = "https://backend-kahoot-3.onrender.com/api";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://backend-kahoot-3.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://triviarena.onrender.com/api";
 // const API_BASE_URL = "https://backend-kahoot-3.onrender.com/api";
 
 
@@ -10,7 +10,7 @@ const handleResponse = async (response) => {
     throw new Error(error.message || "Something went wrong");
   }
   const responseData = await response.json();
-  console.log(responseData);
+  // console.log(responseData);
   return responseData;
 };
 
@@ -45,7 +45,7 @@ export const createUser = async (newUser) => {
     }
     return await data.json()
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     return null;
   }
 
@@ -54,8 +54,8 @@ export const createUser = async (newUser) => {
 
 export const updateQuiz = async (id, updatedQuiz) => {
   try {
-    console.log(`Sending update request for quiz with id: ${id}`);
-    console.log('Updated quiz data:', updatedQuiz);
+    // console.log(`Sending update request for quiz with id: ${id}`);
+    // console.log('Updated quiz data:', updatedQuiz);
 
     const response = await fetch(`${API_BASE_URL}/quizes/${id}`, {
       method: "PATCH",
@@ -70,7 +70,7 @@ export const updateQuiz = async (id, updatedQuiz) => {
     }
 
     const data = await response.json();
-    console.log('Successfully updated quiz:', data);
+    // console.log('Successfully updated quiz:', data);
     return data;
   } catch (err) {
     console.error("Error updating quiz:", err);
@@ -119,7 +119,7 @@ export const getUser = async (id) => {
     });
     return await data.json()
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     return null;
   }
 }
@@ -152,7 +152,7 @@ export const createQuiz = async (newQuiz) => {
 
     return await response.json();
   } catch (err) {
-    console.log("Error creating quiz:", err);
+    // console.log("Error creating quiz:", err);
     return null;
   }
 };

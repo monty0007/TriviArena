@@ -14,11 +14,11 @@ function Login() {
     e.preventDefault()
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      console.log('User logged in Succesfully')
+      // console.log('User logged in Succesfully')
       toast.success('User logged in Successfully', { position: 'top-center' })
       navigate('/dashboard', { replace: true })
     } catch (error) {
-      console.log(error.message)
+      // console.log(error.message)
       toast.error('Login failed: ' + error.message, { position: 'top-center' })
     }
   }

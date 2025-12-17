@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import { useNavigate } from 'react-router-dom';
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://backend-kahoot-3.onrender.com');
+const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://triviarena-socketserver.onrender.com');
 
 export default function Join() {
   const navigate = useNavigate();

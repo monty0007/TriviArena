@@ -132,11 +132,11 @@ export default function Navbar(props) {
 
       if (result.isConfirmed) {
         if (quiz._id) {
-          console.log('Updating quiz with id: ', quiz._id)
+          // console.log('Updating quiz with id: ', quiz._id)
           await updateQuiz(quiz._id, updatedQuiz)
           toast.success('Quiz Updated Successfully! 🚀', { position: 'top-right' })
         } else {
-          console.log('Creating new quiz')
+          // console.log('Creating new quiz')
           await createQuiz(updatedQuiz)
           toast.success('Quiz Created Successfully! 🎉', { position: 'top-right' })
         }
@@ -158,18 +158,18 @@ export default function Navbar(props) {
   }
 
   const handleHost = () => {
-    console.log("Handle Host Clicked");
-    console.log("MainQuestion:", mainQuestion);
+    // console.log("Handle Host Clicked");
+    // console.log("MainQuestion:", mainQuestion);
 
     if (!mainQuestion || mainQuestion.length === 0) {
-      console.log("Validation Failed: No questions");
+      // console.log("Validation Failed: No questions");
       toast.error('Please add at least one question before hosting!', { position: 'top-center' });
       return;
     }
 
     // Generate new Room ID (4 digits)
     const newRoomId = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log("Generated Room:", newRoomId);
+    // console.log("Generated Room:", newRoomId);
 
     // Update Context
     setRoom(newRoomId);
@@ -179,7 +179,7 @@ export default function Navbar(props) {
     sessionStorage.setItem('host_questions', JSON.stringify(mainQuestion));
     sessionStorage.setItem('host_quiz', JSON.stringify(quiz));
 
-    console.log("Session Storage Set. Navigating to /host");
+    // console.log("Session Storage Set. Navigating to /host");
 
     navigate('/host')
   }
