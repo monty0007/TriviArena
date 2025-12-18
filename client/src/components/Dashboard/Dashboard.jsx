@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { auth } from '../Firebase/Firebase'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../Create/Navbar'
-import { fetchTeacherQuizes, fetchQuiz, deleteQuiz, createQuiz, getUser } from '../Api/Api' // Updated Import
+import { fetchTeacherQuizes, fetchQuiz, deleteQuiz, createQuiz, getUser, createUser } from '../Api/Api' // Updated Import
 import { Question } from '../../context/QuestionContext'
 import { sampleQuizzes } from '../../data/sampleQuizzes' // Import Sample Data
 import { toast } from 'react-toastify'
