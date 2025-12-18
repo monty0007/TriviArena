@@ -113,12 +113,11 @@ export const fetchQuiz = async (id) => {
 
 export const getUser = async (id) => {
   try {
-    const data = await fetch(`${API_BASE_URL}/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
+      headers: { ...await getAuthHeader() },
     });
-    return await data.json()
+    return await handleResponse(response);
   } catch (err) {
     // console.log(err)
     return null;

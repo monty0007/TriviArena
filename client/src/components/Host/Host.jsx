@@ -14,6 +14,7 @@ function Host() {
   const [isLoading, setIsLoading] = useState(false);
   const [joinedUsers, setJoinedUsers] = useState([]);
   const [question, setQuestion] = useState('');
+  const [image, setImage] = useState('');
   const [options, setOptions] = useState([]);
   const [seconds, setSeconds] = useState(10);
   const [isQuestionActive, setIsQuestionActive] = useState(false);
@@ -94,6 +95,7 @@ function Host() {
         // If reconnecting to an active game
         if (gameState === 'QUESTION_ACTIVE' && currentQuestion) {
           setQuestion(currentQuestion.question);
+          setImage(currentQuestion.backgroundImage);
           setOptions(currentQuestion.answers);
           setSeconds(currentQuestion.timer);
           // Note: On reconnect, server currently sends full duration. 
@@ -113,8 +115,9 @@ function Host() {
 
     handleReconnection();
 
-    socket.on('newQuestion', ({ question, answers, timer }) => {
+    socket.on('newQuestion', ({ question, backgroundImage, answers, timer }) => {
       setQuestion(question);
+      setImage(backgroundImage);
       setOptions(answers);
       setSeconds(timer);
       setEndTime(Date.now() + (timer * 1000));
@@ -160,7 +163,9 @@ function Host() {
       setWinner(winner);
       setTopPlayers(topPlayers);
       setIsQuestionActive(false);
+      setIsQuestionActive(false);
       setQuestion('');
+      setImage('');
       setOptions([]);
       setSeconds(10);
 
@@ -361,7 +366,7 @@ function Host() {
 
   // Active Game Screen for Host
   return (
-    <div className={`min-h-screen bg-[#2563eb] flex flex-col items-center p-6 relative font-sans ${isQuestionActive ? 'justify-start pt-6' : 'justify-center'}`}>
+    <div className={`h-screen bg-[#2563eb] flex flex-col items-center p-4 relative font-sans overflow-hidden ${isQuestionActive ? 'justify-start pt-4' : 'justify-center'}`}>
 
       {/* Background Decor */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
@@ -403,7 +408,7 @@ function Host() {
       {/* Main Content */}
       {!isQuestionActive ? (
         // LOBBY STATE
-        <div className="z-10 w-full max-w-6xl flex flex-col h-[85vh] bg-white rounded-3xl shadow-card overflow-hidden mt-16 md:mt-0">
+        <div className="z-10 w-full max-w-6xl flex flex-col flex-1 bg-white rounded-3xl shadow-card overflow-hidden mt-16 md:mt-0 mb-4 h-full">
           <div className="bg-white p-6 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="flex flex-col">
               <span className="text-gray-500 font-bold uppercase tracking-wide text-xs md:text-sm">Join at</span>
@@ -522,45 +527,88 @@ function Host() {
             </div>
           </div>
 
-          <div className="bg-white text-gray-900 w-full p-4 md:p-10 rounded shadow-card mb-4 md:mb-8 text-center min-h-[150px] md:min-h-[180px] flex items-center justify-center relative">
-            <h2 className="text-xl md:text-4xl lg:text-5xl font-black leading-tight break-words max-w-full">{question}</h2>
-
-            {/* Timer Circle - Responsive Positioning */}
-            {!isWaitingForNext && (
-              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-16 h-16 md:w-24 md:h-24 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
-                <span className="text-xl md:text-3xl font-black text-white">{seconds}</span>
-              </div>
-            )}
-
-            {/* Show 'Time Up' or Status when waiting OR when timer hits 0 locally */}
-            {(isWaitingForNext || seconds === 0) && (
-              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-16 h-16 md:w-24 md:h-24 bg-red-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
-                <span className="text-xs md:text-sm font-black text-white uppercase text-center leading-tight">Time<br />Up</span>
-              </div>
-            )}
-
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 w-full flex-1 min-h-[40vh] md:min-h-[350px] pb-24 md:pb-0">
-            {options.map((answer, index) => {
-              // Classic Kahoot Colors: Red, Blue, Yellow (Orangeish), Green
-              const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
-              const icons = ['▲', '◆', '●', '■'];
-              return (
-                <div
-                  key={index}
-                  className={`
-                            w-full h-full rounded shadow-button flex items-center p-4 md:p-8 transition-all active:shadow-button-active active:translate-y-1
-                            ${bgColors[index]}
-                            ${isWaitingForNext ? 'opacity-50 grayscale' : ''} 
-                          `}
-                >
-                  <span className="text-white/80 text-3xl md:text-5xl mr-4 md:mr-6 font-black">{icons[index]}</span>
-                  <span className="text-white text-xl md:text-3xl font-bold break-words">{answer}</span>
+          {/* Main Content Area - Conditional Layout */}
+          {image ? (
+            // --- IMAGE MODE (Compact Text, Big Image, Compact Options) ---
+            <>
+              <div className="flex-1 w-full flex flex-col relative min-h-0 mb-2">
+                {/* Question Text - Compact */}
+                <div className="bg-white text-gray-900 w-full p-3 rounded-t-2xl text-center flex-shrink-0 z-10 shadow-sm border-b border-gray-100">
+                  <h2 className="text-xl md:text-2xl font-black leading-tight break-words max-w-full">{question}</h2>
                 </div>
-              )
-            })}
-          </div>
+
+                {/* Image Area - Takes all remaining space */}
+                <div className="bg-white w-full flex-1 relative flex items-center justify-center p-2 rounded-b-2xl shadow-card overflow-hidden">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img src={image} alt="Question" className="max-w-full max-h-full object-contain" />
+                  </div>
+
+                  {/* Timer Circle - Overlaid on Image */}
+                  {!isWaitingForNext && (
+                    <div className="absolute bottom-4 right-4 w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+                      <span className="text-2xl font-black text-white">{seconds}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Options Grid - Fixed Height (Compact) */}
+              <div className="grid grid-cols-2 gap-2 w-full h-[25vh] min-h-[120px] flex-shrink-0">
+                {options.map((answer, index) => {
+                  const bgColors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
+                  const icons = ['▲', '◆', '●', '■'];
+                  return (
+                    <div
+                      key={index}
+                      className={`w-full h-full rounded-lg shadow-sm flex items-center px-4 transition-all ${bgColors[index]} ${isWaitingForNext ? 'opacity-50 grayscale' : ''}`}
+                    >
+                      <span className="text-white/80 text-xl font-black mr-2">{icons[index]}</span>
+                      <span className="text-white text-lg font-bold leading-tight line-clamp-2">{answer}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          ) : (
+            // --- TEXT MODE (Big Text, Big Options) ---
+            <>
+              <div className="bg-white text-gray-900 w-full p-8 md:p-14 rounded-3xl shadow-card mb-6 text-center flex-1 flex flex-col items-center justify-center relative">
+                <h2 className="text-3xl md:text-5xl lg:text-6xl font-black leading-tight break-words max-w-full">{question}</h2>
+
+                {/* Timer Circle - Centered Left or Floating */}
+                {!isWaitingForNext && (
+                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-12 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-20 h-20 md:w-28 md:h-28 bg-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-xl z-20">
+                    <span className="text-3xl font-black text-white">{seconds}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Options Grid - Tall/Flexible */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-[40vh] min-h-[300px]">
+                {options.map((answer, index) => {
+                  const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
+                  const icons = ['▲', '◆', '●', '■'];
+                  return (
+                    <div
+                      key={index}
+                      className={`w-full h-full rounded-2xl shadow-button flex items-center p-6 md:p-10 transition-all ${bgColors[index]} ${isWaitingForNext ? 'opacity-50 grayscale' : ''}`}
+                    >
+                      <span className="text-white/80 text-4xl md:text-6xl mr-6 font-black">{icons[index]}</span>
+                      <span className="text-white text-2xl md:text-4xl font-bold break-words">{answer}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Show 'Time Up' or Status when waiting OR when timer hits 0 locally */}
+          {(isWaitingForNext || seconds === 0) && (
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 md:-left-16 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 w-16 h-16 md:w-24 md:h-24 bg-red-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-20">
+              <span className="text-xs md:text-sm font-black text-white uppercase text-center leading-tight">Time<br />Up</span>
+            </div>
+          )}
+
 
           {/* HOST CONTROLS - NEXT BUTTON or AUTO COUNTDOWN */}
           {isWaitingForNext && (
@@ -582,7 +630,6 @@ function Host() {
               )}
             </div>
           )}
-
         </div>
       )}
 

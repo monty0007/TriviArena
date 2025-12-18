@@ -138,40 +138,21 @@ function Mainbody() {
   return (
     <div className="w-full h-full bg-gray-100 p-4 md:p-8 flex flex-col items-center custom-scrollbar overflow-y-auto">
 
-      {/* Validation Error Banner */}
-      {validationError && Object.keys(validationError).length > 0 && (
-        <div className="w-full bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-md animate-pulse">
-          <div className="flex items-center">
-            <svg className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div>
-              <p className="font-bold">Please fix the following errors:</p>
-              <ul className="list-disc list-inside text-sm">
-                {validationError.name && <li>Quiz Title is missing (Left Sidebar)</li>}
-                {validationError.question && <li>Question text is required</li>}
-                {Object.keys(validationError).some(k => k.startsWith('option')) && <li>Options 1 & 2 are mandatory</li>}
-                {validationError.correctOption && <li>Select a correct answer</li>}
-                {(validationError.questionType || validationError.answerTime || validationError.pointType) && <li>Check Quiz Settings (Right Sidebar)</li>}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Validation Error Banner Removed as per user request */}
 
       {/* Question Input */}
-      <div className={`w-full bg-white rounded-xl shadow-card p-6 mb-8 transition-all duration-300 ${validationError?.question ? 'ring-4 ring-red-500 border-red-500' : ''}`}>
+      <div className={`w-full bg-white rounded-xl shadow-card p-4 md:p-6 mb-4 md:mb-8 transition-all duration-300 ${validationError?.question ? 'ring-4 ring-red-500 border-red-500' : ''}`}>
         <input
           type="text"
           value={displayQuestion.question || ''}
           onChange={handleInputQuestion}
           placeholder={validationError?.question ? "Question text is required!" : "Start typing your question"}
-          className={`w-full text-center text-3xl font-black text-gray-800 bg-transparent border-b-2 border-gray-200 focus:outline-none pb-4 transition-colors ${validationError?.question ? 'placeholder-red-400 border-red-500' : 'placeholder-gray-300 focus:border-blue-500'}`}
+          className={`w-full text-center text-xl md:text-3xl font-black text-gray-800 bg-transparent border-b-2 border-gray-200 focus:outline-none pb-2 md:pb-4 transition-colors ${validationError?.question ? 'placeholder-red-400 border-red-500' : 'placeholder-gray-300 focus:border-blue-500'}`}
         />
       </div>
 
       {/* Media Area */}
-      <div className="w-full h-96 mb-6">
+      <div className="w-full h-32 md:h-96 mb-4 md:mb-6">
         {displayQuestion.backgroundImage ? (
           <div className="w-full h-full relative group rounded-xl overflow-hidden shadow-lg">
             <img src={displayQuestion.backgroundImage} alt="Question" className="w-full h-full object-cover" />
@@ -199,18 +180,18 @@ function Mainbody() {
                 className="hidden"
               />
             </label>
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-16 h-16 md:w-24 md:h-24 bg-blue-100 rounded-full flex items-center justify-center mb-2 md:mb-4 group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <span className="text-gray-500 font-bold group-hover:text-blue-600 transition-colors">Add media</span>
+            <span className="text-gray-500 font-bold group-hover:text-blue-600 transition-colors text-xs md:text-base">Add media</span>
           </div>
         )}
       </div>
 
       {/* Answer Options Grid */}
-      <div className={`w-full grid ${isTrueFalse ? 'grid-cols-2 h-[150px]' : 'grid-cols-2 h-[200px]'} gap-4`}>
+      <div className={`w-full grid ${isTrueFalse ? 'grid-cols-2 h-[120px] md:h-[150px]' : 'grid-cols-2 h-[160px] md:h-[200px]'} gap-2 md:gap-4`}>
         {renderOptionInput("option1", isTrueFalse ? "True" : "Add answer 1", "bg-red-500", "triangle")}
         {renderOptionInput("option2", isTrueFalse ? "False" : "Add answer 2", "bg-blue-500", "diamond")}
         {renderOptionInput("option3", "Add answer 3", "bg-yellow-500", "circle")}

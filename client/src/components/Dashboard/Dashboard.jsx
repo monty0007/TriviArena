@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { auth } from '../Firebase/Firebase'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../Create/Navbar'
-import { fetchTeacherQuizes, fetchQuiz, deleteQuiz, createQuiz } from '../Api/Api' // Updated Import
+import { fetchTeacherQuizes, fetchQuiz, deleteQuiz, createQuiz, getUser } from '../Api/Api' // Updated Import
 import { Question } from '../../context/QuestionContext'
 import { sampleQuizzes } from '../../data/sampleQuizzes' // Import Sample Data
 import { toast } from 'react-toastify'
@@ -21,15 +21,31 @@ function Dashboard() {
   const { setQuiz, setMainQuestion, setDisplayQuestion, displayQuestion, setValidationError, setRoom } = useContext(Question)
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        setUserDetails(user)
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
+        // console.log("Auth User:", currentUser);
+
+        // 1. Fetch deep user details from Backend (MongoDB) to get firstName/lastName
         try {
-          const fetchedQuizzes = await fetchTeacherQuizes(user.uid)
+          const backendUser = await getUser(currentUser.uid);
+          // console.log("Backend User:", backendUser);
+
+          if (backendUser) {
+            // Merge Firebase auth user with Backend user data
+            setUserDetails({ ...currentUser, ...backendUser });
+          } else {
+            // Fallback to just Firebase user
+            setUserDetails(currentUser);
+          }
+
+          // 2. Fetch Quizzes
+          const fetchedQuizzes = await fetchTeacherQuizes(currentUser.uid)
           setQuizzes(fetchedQuizzes)
+
         } catch (error) {
-          console.error("Error fetching quizzes:", error)
-          toast.error("Failed to load quizzes")
+          console.error("Error fetching data:", error)
+          setUserDetails(currentUser); // Ensure we at least have the auth user
+          toast.error("Failed to load full profile")
         }
       } else {
         setUserDetails(null)
@@ -229,8 +245,8 @@ function Dashboard() {
                   onClick={createSampleQuiz}
                   className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-all font-bold shadow-lg hover:shadow-green-500/30 flex items-center gap-2 border border-white/20"
                 >
-                  <span>🌱</span>
-                  <span className="hidden md:inline">Sample Quiz</span>
+                  <span>🎲</span>
+                  <span className="whitespace-nowrap">Generate Sample</span>
                 </button>
                 <button
                   className="bg-white/10 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-lg transition-all font-bold border border-white/20"

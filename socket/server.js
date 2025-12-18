@@ -114,6 +114,7 @@ function askNewQuestion(room) {
   console.log(`[Room ${room}] Preparing payload for question ID: ${ques._id || 'unknown'}`);
   const questionPayload = {
     question: ques.question,
+    backgroundImage: ques.backgroundImage,
     questionIndex: ques.questionIndex,
     answers: ques.answerList?.map((answer) => answer.body || answer.name || answer), // Fallback if body is missing
     timer: timer,

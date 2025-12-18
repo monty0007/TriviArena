@@ -76,12 +76,14 @@ export default function Navbar(props) {
     if (Object.keys(consolidatedErrors).length > 0) {
       setValidationError(consolidatedErrors);
 
-      // If we have a bad question, switch to it
-      if (firstInvalidQuestion) {
-        setDisplayQuestion(firstInvalidQuestion);
-      }
+      // If we have a bad question, switch to it?
+      // User request "instead of showing that on main body" might mean don't jump.
+      // We will keep auto-jump disabled for now, but restore red markings.
+      // if (firstInvalidQuestion) {
+      //   setDisplayQuestion(firstInvalidQuestion);
+      // }
 
-      toast.error('Please fix the highlighted errors before saving.', { position: 'top-center' });
+      toast.error('Please fill all required fields first!', { position: 'top-center', autoClose: 3000 });
       return false;
     }
 

@@ -1,451 +1,337 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Confetti from 'react-confetti';
-import { useNavigate } from 'react-router-dom';
-import { FiX, FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 
-const socket = io(import.meta.env.VITE_SOCKET_URL);
+const socket = io(import.meta.env.VITE_SOCKET_URL, { autoConnect: false });
 
-export default function Join() {
-  const navigate = useNavigate();
-  const [room, setRoom] = useState('');
-  const [name, setName] = useState('');
-  const [info, setInfo] = useState(false);
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState([]);
-  const [scores, setScores] = useState([]);
-  const [seconds, setSeconds] = useState('');
-  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState(null);
-  const [correctAnswerIndex, setCorrectAnswerIndex] = useState(null);
-  const [answered, setAnswered] = useState(false);
-  const [winner, setWinner] = useState();
-  const [topPlayers, setTopPlayers] = useState([]);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [isWaitingForResults, setIsWaitingForResults] = useState(false);
-  const [autoCountdown, setAutoCountdown] = useState(null);
-  const [quizHistory, setQuizHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [isGameTerminated, setIsGameTerminated] = useState(false);
+function Join() {
+    const [name, setName] = useState('');
+    const [room, setRoom] = useState('');
+    const [isJoined, setIsJoined] = useState(false);
+    const [message, setMessage] = useState('');
+    const [gameState, setGameState] = useState('LOBBY'); // LOBBY, QUESTION_ACTIVE, WAITING_FOR_NEXT, GAME_OVER
+    const [question, setQuestion] = useState('');
+    const [image, setImage] = useState(''); // New image state
+    const [options, setOptions] = useState([]);
+    const [timer, setTimer] = useState(0);
+    const [score, setScore] = useState(0);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [isCorrect, setIsCorrect] = useState(null); // null, true, false
+    const [rank, setRank] = useState(0);
+    const [totalPlayers, setTotalPlayers] = useState(0);
+    const [winner, setWinner] = useState(null);
+    const [topPlayers, setTopPlayers] = useState([]);
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (name && room) {
-      sessionStorage.setItem('player_room', room);
-      sessionStorage.setItem('player_name', name);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-      socket.emit('joinRoom', { room, name }, ({ users, room }) => {
-        setRoom(room);
-        setInfo(true);
-      });
-    }
-  }
+    // Helper to get query params
+    const useQuery = () => new URLSearchParams(location.search);
+    const query = useQuery();
 
-  const leaveGame = () => {
-    sessionStorage.removeItem('player_room');
-    sessionStorage.removeItem('player_name');
-    setInfo(false);
-    setRoom('');
-    setName('');
-    setIsGameTerminated(false);
-    window.location.reload();
-  };
+    useEffect(() => {
+        // 1. Auto-fill from URL
+        const roomParam = query.get('room');
+        if (roomParam) setRoom(roomParam);
 
-  const handleAnswers = () => {
-    setShowHistory(true);
-  }
+        // 2. Enforce Single User: Auto-login if session exists
+        const storedName = sessionStorage.getItem('player_name');
+        const storedRoom = sessionStorage.getItem('player_room');
 
-  const handleAnswer = (answerIndex) => {
-    if (!answered) {
-      setSelectedAnswerIndex(answerIndex);
-      socket.emit('submitAnswer', room, '', answerIndex, (data) => {
-        if (data.isCorrect) {
-          toast.success(`Correct! +${data.points || 'Points'}`, { position: 'top-center', autoClose: 2000 });
-          setCorrectAnswerIndex(answerIndex);
-        } else {
-          toast.error(`Incorrect!`, { position: 'top-center', autoClose: 2000 });
-          setCorrectAnswerIndex(data.correctIndex);
+        if (storedName && storedRoom) {
+            setName(storedName);
+            setRoom(storedRoom);
+            // Auto-connect
+            if (!socket.connected) socket.connect();
+            socket.emit('join', { name: storedName, room: storedRoom });
         }
-        setScores(data.scores);
-      });
-      setAnswered(true);
-    }
-  };
+    }, []);
 
-  // Precise Timer Logic
-  const [endTime, setEndTime] = useState(null);
+    useEffect(() => {
+        // Socket Listeners
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
 
-  useEffect(() => {
-    if (!endTime) return;
+        socket.on('error', (msg) => {
+            setMessage(msg);
+            // If error (e.g. name taken), reset joined state
+            setIsJoined(false);
+        });
 
-    const timerInterval = setInterval(() => {
-      const remaining = Math.ceil((endTime - Date.now()) / 1000);
+        socket.on('joined', ({ name, room }) => {
+            setIsJoined(true);
+            setMessage(`Joined Room: ${room}`);
+            // Simple persistence
+            sessionStorage.setItem('player_name', name);
+            sessionStorage.setItem('player_room', room);
+        });
 
-      if (remaining <= 0) {
-        setSeconds(0);
-      } else {
-        setSeconds(remaining);
-      }
-    }, 200);
+        socket.on('newQuestion', ({ question, backgroundImage, answers, timer }) => {
+            setGameState('QUESTION_ACTIVE');
+            setQuestion(question);
+            setImage(backgroundImage); // Set image
+            setOptions(answers);
+            setTimer(timer);
+            setSelectedOption(null);
+            setIsCorrect(null);
+            setMessage('');
+        });
 
-    return () => clearInterval(timerInterval);
-  }, [endTime, isWaiting, answered, correctAnswerIndex, question]);
+        socket.on('timerUpdate', (time) => {
+            setTimer(time);
+        });
 
-  // Handle zeroing out transition
-  useEffect(() => {
-    if (seconds <= 0 && !isWaiting && !answered && !correctAnswerIndex && question) {
-      setIsWaiting(true);
-    }
-  }, [seconds, isWaiting, answered, correctAnswerIndex, question]);
-
-  useEffect(() => {
-    socket.on('message', (message) => {
-      toast.info(message, { position: 'top-right', autoClose: 3000 });
-    });
-    return () => socket.off('message');
-  }, []);
-
-  useEffect(() => {
-    socket.on('gameStarted', () => {
-      setInfo(true);
-    });
-    socket.on('newQuestion', (data) => {
-      console.log('[Join] Received newQuestion:', data);
-      const { question, answers, timer } = data;
-      setQuestion(question);
-      setOptions(answers);
-      const durationMs = timer * 1000;
-      setEndTime(Date.now() + durationMs);
-      setSeconds(timer);
-
-      setAnswered(false);
-      setSelectedAnswerIndex(null);
-      setCorrectAnswerIndex(null);
-      setIsWaiting(false);
-      setAutoCountdown(null);
-    });
-
-    socket.on('questionEnded', ({ isLastQuestion, autoAdvance, nextQuestionDelay } = {}) => {
-      setEndTime(null);
-      setSeconds(0);
-      setIsWaiting(true);
-      if (isLastQuestion) setIsWaitingForResults(true);
-
-      if (autoAdvance && nextQuestionDelay) {
-        let c = Math.floor(nextQuestionDelay / 1000) - 1;
-        if (c < 1) c = 3;
-        setAutoCountdown(c);
-
-        const intv = setInterval(() => {
-          setAutoCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(intv);
-              return 0;
+        socket.on('questionEnded', ({ correctAnswer, yourAnswer, isCorrect, score, rank, totalPlayers }) => {
+            setGameState('WAITING_FOR_NEXT');
+            setIsCorrect(isCorrect);
+            setScore(score);
+            setRank(rank);
+            setTotalPlayers(totalPlayers);
+            if (isCorrect) {
+                setMessage(`Correct! +${score} pts`);
+            } else {
+                setMessage(`Wrong! The answer was ${correctAnswer}`);
             }
-            return prev - 1;
-          });
-        }, 1000);
-      }
-    });
+        });
 
-    socket.on('gameOver', (data) => {
-      setWinner(data.winner);
-      setTopPlayers(data.topPlayers);
-      setQuizHistory(data.history || []);
-    });
+        socket.on('gameOver', ({ winner, topPlayers }) => {
+            setGameState('GAME_OVER');
+            setWinner(winner);
+            setTopPlayers(topPlayers);
+        });
 
-    socket.on('gameTerminated', () => {
-      setIsGameTerminated(true);
-      setInfo(false);
-      setQuestion('');
-      sessionStorage.clear();
-    });
+        socket.on('hostEndedSession', () => {
+            alert("The host has ended the session. Please enter a new code.");
+            sessionStorage.clear();
+            window.location.href = '/join'; // Or use navigate('/')
+        });
 
-    return () => {
-      socket.off('newQuestion');
-      socket.off('answerResult');
-      socket.off('gameOver');
-      socket.off('gameStarted');
-      socket.off('questionEnded');
-      socket.off('gameTerminated');
+        return () => {
+            socket.off('connect');
+            socket.off('error');
+            socket.off('joined');
+            socket.off('newQuestion');
+            socket.off('timerUpdate');
+            socket.off('questionEnded');
+            socket.off('gameOver');
+            socket.off('hostEndedSession');
+        };
+    }, []);
+
+    const handleJoin = (e) => {
+        e.preventDefault();
+        if (name && room) {
+            if (!socket.connected) socket.connect();
+            socket.emit('join', { name, room });
+        }
     };
-  }, []);
 
-  useEffect(() => {
-    socket.on('hostDisconnected', () => {
-      toast.info("The host has ended the session. Please enter a new code.", { position: 'top-center', autoClose: 4000 });
-      sessionStorage.removeItem('player_room');
-      sessionStorage.removeItem('player_name');
-      setInfo(false);
-      setRoom('');
-      setName('');
-    });
-    return () => socket.off('hostDisconnected');
-  }, []);
+    const handleAnswer = (option) => {
+        if (selectedOption || gameState !== 'QUESTION_ACTIVE') return;
+        setSelectedOption(option);
+        socket.emit('submitAnswer', { room, answer: option });
+    };
 
-  // Game Over Screen
-  if (winner) {
-    if (showHistory) {
-      return (
-        <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 font-sans">
-          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-card flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-2xl font-black text-gray-800">Quiz Results</h2>
-              <button onClick={() => setShowHistory(false)} className="text-blue-600 font-bold hover:underline">Close</button>
-            </div>
-            <div className="overflow-y-auto p-6 space-y-6">
-              {quizHistory.map((q, i) => (
-                <div key={i} className="border border-gray-200 rounded-xl p-4 shadow-sm">
-                  <h3 className="font-bold text-gray-900 mb-3 text-lg"><span className="text-blue-500 mr-2">Q{i + 1}.</span>{q.question}</h3>
-                  <div className="space-y-2">
-                    {q.options.map((opt, idx) => (
-                      <div key={idx} className={`p-3 rounded-lg font-medium text-sm flex justify-between items-center ${opt.isCorrect ? 'bg-green-100 text-green-800 border-green-200 border' : 'bg-gray-50 text-gray-500'}`}>
-                        <span>{opt.body || opt.name}</span>
-                        {opt.isCorrect && <span className="text-xl">✅</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )
+    const handleLeave = () => {
+        socket.disconnect();
+        sessionStorage.clear();
+        setIsJoined(false);
+        navigate('/');
     }
 
-    return (
-      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 text-center overflow-hidden relative font-sans">
-        <Confetti width={window.innerWidth} height={window.innerHeight} recycle={true} numberOfPieces={600} />
-        <div className="z-10 bg-white p-8 rounded-3xl shadow-card max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
-          <h1 className="text-4xl font-black text-gray-900 mb-6">Game Over!</h1>
+    // GAME OVER SCREEN
+    if (gameState === 'GAME_OVER') {
+        const isWinner = winner && winner.name === name;
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white flex flex-col items-center justify-center p-4">
+                {isWinner && <Confetti />}
+                <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl text-center max-w-md w-full border border-white/20 animate-scale-in">
+                    <h1 className="text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+                        {isWinner ? 'VICTORY!' : 'GAME OVER'}
+                    </h1>
+                    <p className="text-xl font-bold mb-8 text-blue-200">{isWinner ? 'You represent the pinnacle of intellect!' : 'Better luck next time!'}</p>
 
-          <div className="mb-8 transform scale-100 md:scale-110">
-            <div className="w-24 h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center border-4 border-yellow-200 mb-4 animate-bounce">
-              <span className="text-4xl">🏆</span>
+                    <div className="bg-black/30 rounded-2xl p-6 mb-8">
+                        <div className="text-sm text-gray-400 uppercase tracking-widest font-bold mb-2">Final Score</div>
+                        <div className="text-6xl font-black text-white mb-2">{score}</div>
+                        <div className="inline-block bg-white/20 px-4 py-1 rounded-full text-sm font-bold">Rank #{rank} / {totalPlayers}</div>
+                    </div>
+
+                    <button
+                        onClick={handleLeave}
+                        className="w-full bg-white text-blue-900 font-black py-4 rounded-xl shadow-lg hover:bg-blue-50 transform hover:scale-105 transition-all"
+                    >
+                        Back to Home
+                    </button>
+                </div>
             </div>
-            <div className="bg-yellow-50 inline-block px-6 py-2 rounded-full border border-yellow-200">
-              <span className="text-sm font-bold text-yellow-600 uppercase tracking-widest block mb-1">Winner</span>
-              <h2 className="text-3xl font-bold text-gray-800 uppercase tracking-wider">{winner}</h2>
+        )
+    }
+
+    // ACTIVE GAME SCREEN
+    if (isJoined) {
+        return (
+            <div className="min-h-screen bg-[#46178f] flex flex-col items-center relative overflow-hidden font-sans">
+
+                {/* Top Bar */}
+                <div className="w-full flex justify-between items-center p-4 z-10 bg-black/20 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold border-2 border-white/30">
+                            {name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div className="text-xs text-white/60 font-bold uppercase tracking-wider">Player</div>
+                            <div className="font-black text-white leading-none">{name}</div>
+                        </div>
+                    </div>
+                    <div className="bg-white/20 px-4 py-2 rounded-full font-black text-white text-xl shadow-inner border border-white/10">
+                        {score} pts
+                    </div>
+                </div>
+
+                {/* Game Content */}
+                <div className="flex-1 w-full max-w-lg p-4 flex flex-col justify-center relative z-10">
+
+                    {gameState === 'LOBBY' && (
+                        <div className="text-center animate-float">
+                            <div className="text-6xl mb-6">⏳</div>
+                            <h2 className="text-3xl font-black text-white mb-4">You're in!</h2>
+                            <p className="text-xl text-blue-200 font-medium">See your name on screen?</p>
+                        </div>
+                    )}
+
+                    {gameState === 'WAITING_FOR_NEXT' && (
+                        <div className="text-center animate-fade-in-up">
+                            <div className={`text-6xl mb-6 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                                {isCorrect ? 'Correct! 🎉' : 'Oops! ❌'}
+                            </div>
+                            <div className="bg-black/30 p-6 rounded-2xl backdrop-blur-md border border-white/10">
+                                <div className="text-gray-400 font-bold uppercase text-sm mb-1">Current Streak</div>
+                                <div className="text-white font-black text-2xl">🔥 3</div>
+                                {/* Streak is dummy for now, can implement later */}
+                            </div>
+                            <p className="text-white/60 mt-8 font-bold animate-pulse">Waiting for host...</p>
+                        </div>
+                    )}
+
+                    {gameState === 'QUESTION_ACTIVE' && (
+                        <div className="w-full h-full flex flex-col">
+                            {/* Timer Bar */}
+                            {/* Timer Bar */}
+                            <div className="w-full bg-white/20 h-2 rounded-full mb-6 overflow-hidden">
+                                <div
+                                    className="h-full bg-yellow-400 transition-all duration-1000 ease-linear"
+                                    style={{ width: `${(timer / 30) * 100}%` }} // Assuming 30s max for visual
+                                ></div>
+                            </div>
+
+                            {/* Question Card */}
+                            <div className="bg-white rounded-2xl p-6 shadow-2xl mb-6 min-h-[160px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                <h2 className="text-gray-900 text-xl font-bold leading-tight z-10 relative">
+                                    {question}
+                                </h2>
+
+                                {/* Image Display */}
+                                {image && (
+                                    <div className="w-full max-h-60 md:max-h-80 mt-4 rounded-lg overflow-hidden border border-gray-100">
+                                        <img src={image} alt="Question" className="w-full h-full object-contain bg-gray-50" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Options Grid */}
+                            <div className="grid grid-cols-2 gap-3 flex-1">
+                                {options.map((option, idx) => {
+                                    const colors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'];
+                                    const icons = ['▲', '◆', '●', '■'];
+                                    const isSelected = selectedOption === option;
+
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleAnswer(option)}
+                                            disabled={selectedOption !== null}
+                                            className={`
+                                        ${colors[idx]} 
+                                        rounded-xl p-4 flex flex-col items-center justify-center gap-2 shadow-button 
+                                        transition-all active:scale-95 active:shadow-none
+                                        ${isSelected ? 'ring-4 ring-white scale-95 opacity-100' : 'opacity-100'}
+                                        ${selectedOption && !isSelected ? 'opacity-50 grayscale' : ''}
+                                    `}
+                                        >
+                                            <span className="text-white/80 text-3xl font-black">{icons[idx]}</span>
+                                            <span className="text-white font-bold text-lg leading-tight break-words w-full text-center">
+                                                {option}
+                                            </span>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                </div>
             </div>
-          </div>
+        );
+    }
 
-          <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left max-h-60 overflow-y-auto custom-scrollbar border border-gray-100">
-            <h3 className="text-gray-400 font-bold mb-4 uppercase text-sm tracking-widest text-center sticky top-0 bg-gray-50 pb-2 border-b border-gray-200">Leaderboard</h3>
-            <ul className="space-y-2">
-              {topPlayers.map((player) => (
-                <li key={player.name} className={`flex justify-between items-center p-3 rounded-lg border shadow-sm ${player.name === name ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-100' : 'bg-white border-gray-100'}`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-black ${player.position === 1 ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-600'}`}>{player.position}</span>
-                    <span className="font-bold text-gray-800">{player.name} {player.name === name && '(You)'}</span>
-                  </div>
-                  <span className="text-blue-600 font-mono font-bold">{player.score} pts</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex gap-2">
-            <button onClick={() => {
-              sessionStorage.clear();
-              window.location.href = '/';
-            }} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl transition-all">
-              Home
-            </button>
-            <button onClick={handleAnswers} className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-button active:translate-y-1 active:shadow-button-active transition-all flex items-center justify-center gap-2">
-              <span>📝</span> View Answers
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Join Screen
-  if (isGameTerminated) {
+    // LOGIN / JOIN FORM
     return (
-      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 text-center font-sans">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-card p-10 flex flex-col items-center animate-fade-in-up">
-          <div className="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-5xl mb-6 shadow-sm border-4 border-red-50">
-            🛑
-          </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-2">Game Ended</h2>
-          <p className="text-gray-500 font-bold mb-8 text-lg px-4 leading-relaxed">
-            The admin has ended the game.<br />
-            <span className="text-sm text-gray-400 font-medium mt-2 block">Please ask for a new PIN to join.</span>
-          </p>
+        <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 font-sans text-gray-900">
+            <div className="w-full max-w-sm">
+                <div className="text-center mb-10">
+                    <h1 className="text-5xl font-black text-white mb-2 tracking-tight drop-shadow-md">TriviArena</h1>
+                    <p className="text-blue-100 font-medium text-lg">Enter the arena, prove your worth.</p>
+                </div>
 
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-button active:translate-y-1 active:shadow-button-active transition-all text-xl flex items-center justify-center gap-2"
-          >
-            <span>🔄</span> Join New Game
-          </button>
+                <div className="bg-white p-8 rounded-[2rem] shadow-2xl border-4 border-white/20">
+                    <form onSubmit={handleJoin} className="flex flex-col gap-5">
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Game PIN"
+                                className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold text-center text-xl placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all uppercase tracking-widest"
+                                value={room}
+                                onChange={(e) => setRoom(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Nickname"
+                                className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold text-center text-xl placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="h-4">
+                            {message && <p className="text-red-500 text-center font-bold text-sm animate-pulse">{message}</p>}
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-black text-xl shadow-lg transform hover:-translate-y-1 transition-all active:translate-y-0 active:shadow-md"
+                        >
+                            Enter Arena
+                        </button>
+                    </form>
+                </div>
+
+                <nav className="mt-12 flex justify-center">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="text-blue-200 font-bold hover:text-white flex items-center gap-2 transition-colors px-4 py-2 rounded-full hover:bg-white/10"
+                    >
+                        <FiArrowLeft /> Back to Home
+                    </button>
+                </nav>
+            </div>
         </div>
-      </div>
     )
-  }
-
-  if (!info) {
-    return (
-      <div className="min-h-screen bg-[#2563eb] flex flex-col items-center justify-center p-4 relative font-sans">
-
-        {/* Navbar */}
-        <nav className="absolute top-0 left-0 w-full p-6 z-20 flex justify-between items-center">
-          <button
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/10 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2 border border-transparent hover:border-white/20"
-          >
-            <FiArrowLeft size={20} /> Back
-          </button>
-        </nav>
-
-        {/* Background Decor */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-10 w-24 h-24 bg-white/10 rounded-full animate-float"></div>
-          <div className="absolute bottom-20 right-10 w-32 h-32 bg-white/10 rounded-lg transform rotate-45 animate-float"></div>
-        </div>
-
-        <div className="bg-white rounded-xl p-8 shadow-card z-10 w-full max-w-md relative">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-black text-gray-900 mb-2">TriviArena</h1>
-            <p className="text-gray-500 font-bold">Join the fun!</p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <input
-                required
-                value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                type="number"
-                placeholder="Game PIN"
-                className="w-full bg-gray-100 border-2 border-transparent text-gray-900 rounded px-4 py-4 text-center text-2xl font-black placeholder-gray-400 focus:outline-none focus:bg-white focus:border-gray-300 transition-all font-mono"
-              />
-            </div>
-            <div>
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                type="text"
-                placeholder="Nickname"
-                className="w-full bg-gray-100 border-2 border-transparent text-gray-900 rounded px-4 py-4 text-center text-xl font-bold placeholder-gray-400 focus:outline-none focus:bg-white focus:border-gray-300 transition-all"
-              />
-            </div>
-            <button type="submit" className="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded shadow-button active:translate-y-1 active:shadow-button-active transition-all text-xl mt-4">
-              Enter
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // Active Game Screen
-  return (
-    <div className="min-h-screen bg-[#2563eb] flex flex-col p-4 relative font-sans">
-      <ToastContainer />
-
-      <div className="flex justify-between items-center mb-6 z-10 w-full max-w-6xl mx-auto text-white">
-        <div className="font-bold hidden md:block">
-          <span className="opacity-70">PIN:</span> {room}
-        </div>
-        <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full border border-white/10">
-          {name}
-        </div>
-        <div className="flex items-center gap-3">
-          {!isWaiting && seconds !== '' && (
-            <div className="font-bold bg-white/20 backdrop-blur px-4 py-1 rounded-full flex items-center gap-2 border border-white/10">
-              <span>{seconds}s</span>
-            </div>
-          )}
-          <button
-            onClick={leaveGame}
-            className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full font-bold transition-all shadow-sm border border-white/10 backdrop-blur-sm active:scale-95"
-            title="Leave Game"
-          >
-            <FiX size={24} />
-          </button>
-        </div>
-      </div>
-
-      {/* WAITING SCREEN */}
-      {isWaiting ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 w-full h-full pb-10">
-          <div className="w-full h-full flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-xl animate-pulse">
-            <div className={`w-32 h-32 rounded-full flex items-center justify-center text-6xl mb-8 ${isWaitingForResults ? 'bg-yellow-400/20 text-yellow-300' : 'bg-white/20 shadow-inner'}`}>
-              {isWaitingForResults ? '🏆' : (autoCountdown ? '⏱️' : '⏳')}
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">{isWaitingForResults ? 'Quiz Completed!' : "Time's Up!"}</h2>
-            <p className="text-blue-100 font-bold text-xl md:text-2xl max-w-2xl leading-relaxed">
-              {isWaitingForResults ? 'Waiting for host to show results...' : (
-                autoCountdown ? `Next question in ${autoCountdown}...` : 'Waiting for the next question...'
-              )}
-            </p>
-          </div>
-        </div>
-      ) : question ? (
-        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto z-10">
-          <div className="bg-white text-gray-900 w-full p-6 md:p-10 rounded-2xl shadow-card mb-6 text-center min-h-[120px] md:min-h-[160px] flex items-center justify-center transform transition-all hover:scale-[1.01]">
-            <h2 className="text-xl md:text-3xl font-black leading-snug">{question}</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full flex-grow max-h-[60vh]">
-            {options.map((answer, index) => {
-              const bgColors = ['bg-red-500 hover:bg-red-600', 'bg-blue-500 hover:bg-blue-600', 'bg-yellow-500 hover:bg-yellow-600', 'bg-green-500 hover:bg-green-600'];
-              const icons = ['▲', '◆', '●', '■'];
-              const isSelected = selectedAnswerIndex === index;
-              const isCorrect = correctAnswerIndex === index;
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  disabled={answered}
-                  className={`
-                            relative w-full h-full rounded-2xl shadow-button flex items-center p-6 transition-all active:scale-[0.98] disabled:cursor-not-allowed
-                            ${bgColors[index]}
-                            ${answered && !isSelected ? 'opacity-50 grayscale-[0.5]' : ''}
-                            ${isSelected ? 'ring-4 ring-white/50 scale-[1.02] z-10' : ''}
-                          `}
-                >
-                  <span className="text-white/60 text-4xl md:text-5xl mr-6 font-black">{icons[index]}</span>
-                  <span className="text-white text-xl md:text-3xl font-bold text-left leading-tight">{answer}</span>
-
-                  {isCorrect && <div className="absolute top-4 right-4 bg-white text-green-600 rounded-full p-2 text-xl font-bold shadow-lg transform rotate-12">✓</div>}
-                  {answered && isSelected && !isCorrect && correctAnswerIndex !== null && <div className="absolute top-4 right-4 bg-white text-red-500 rounded-full p-2 text-xl font-bold shadow-lg transform rotate-12">✕</div>}
-                </button>
-              )
-            })}
-          </div>
-
-          {answered && !correctAnswerIndex && (
-            <div className="mt-8 bg-black/30 backdrop-blur text-white px-8 py-3 rounded-full font-bold animate-pulse text-lg border border-white/10">
-              Answer submitted! Good luck! 🤞
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-center z-10 w-full h-full">
-          <div className="w-full h-full flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-xl">
-            <div className="w-32 h-32 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-6xl mb-6 animate-bounce shadow-lg ring-8 ring-blue-500/20">
-              👑
-            </div>
-            <h2 className="text-4xl font-black text-white mb-4 drop-shadow-sm">You're in!</h2>
-            <p className="text-blue-100 font-bold mb-10 text-xl">See your name on screen?</p>
-            <div className="w-full max-w-sm bg-white/90 p-4 rounded-xl text-lg text-blue-900 font-black uppercase tracking-widest mb-12 shadow-lg animate-pulse">
-              Waiting for host...
-            </div>
-
-            <button
-              onClick={leaveGame}
-              className="px-8 py-3 rounded-full border-2 border-red-300/50 text-red-100 font-bold hover:bg-red-500/20 hover:border-red-300 transition-all text-sm uppercase tracking-wide"
-            >
-              Leave Game
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
+
+export default Join;

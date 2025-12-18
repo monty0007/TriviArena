@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useContext, useState } from "react";
 import { auth } from "../Firebase/Firebase";
 import { toast } from 'react-toastify';
@@ -19,9 +19,14 @@ function Register() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
-      // console.log(user);
 
+      // Update Profile Name
       if (user) {
+        await updateProfile(user, {
+          displayName: `${fname} ${lname}`
+        });
+
+        // Backend Sync
         const userData = {
           uid: user.uid,
           mail: user.email,
