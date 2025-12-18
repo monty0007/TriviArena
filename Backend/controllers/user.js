@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 
 const createUser = async (req, res) => {
-  const {uid, firstName, lastName, mail } = req.body;
+  const { uid, firstName, lastName, mail } = req.body;
   const user = new User({
     uid,
     firstName,
@@ -30,7 +30,14 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   let user;
   try {
-    user = await User.findById(req.params.id);
+    // Try finding by Firebase UID first as that's what the frontend uses
+    user = await User.findOne({ uid: req.params.id });
+
+    // If not found and ID is valid ObjectId, try finding by _id (fallback)
+    if (!user && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      user = await User.findById(req.params.id);
+    }
+
     if (user == null) {
       return res.status(404).json({ message: "User not found" });
     }

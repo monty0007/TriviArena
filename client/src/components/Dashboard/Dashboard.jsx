@@ -34,8 +34,22 @@ function Dashboard() {
             // Merge Firebase auth user with Backend user data
             setUserDetails({ ...currentUser, ...backendUser });
           } else {
-            // Fallback to just Firebase user
-            setUserDetails(currentUser);
+            // 404 Case: User exists in Firebase but not MongoDB (e.g. env switch). Auto-Sync!
+            // console.log("User missing in DB, syncing...");
+            const nameParts = (currentUser.displayName || "").split(" ");
+            const firstName = nameParts[0] || "User";
+            const lastName = nameParts.slice(1).join(" ") || "";
+
+            const newUserData = {
+              uid: currentUser.uid,
+              mail: currentUser.email,
+              firstName,
+              lastName,
+            };
+            await createUser(newUserData);
+
+            // Use the fresh data
+            setUserDetails({ ...currentUser, ...newUserData });
           }
 
           // 2. Fetch Quizzes
@@ -263,18 +277,23 @@ function Dashboard() {
                 Your Quizzes
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {/* Create New Card */}
+              <div className="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6">
+                {/* Create New Card - Mobile: Compact Row, Desktop: Large Card */}
                 <div
                   onClick={handleCreate}
-                  className="group bg-blue-500 border-dashed border-2 border-white/30 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-400 hover:border-white transition-all duration-300 min-h-[200px] md:min-h-[250px]"
+                  className="group bg-blue-500 border-dashed border-2 border-white/30 rounded-xl p-4 md:p-6 flex flex-row md:flex-col items-center justify-between md:justify-center cursor-pointer hover:bg-blue-400 hover:border-white transition-all duration-300 md:min-h-[250px] shadow-sm md:shadow-none"
                 >
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white group-hover:text-blue-600 text-white transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                    </svg>
+                  <div className="flex items-center gap-3 md:flex-col md:gap-0">
+                    <div className="w-10 h-10 md:w-16 md:h-16 bg-white/20 rounded-full flex items-center justify-center md:mb-4 group-hover:scale-110 group-hover:bg-white group-hover:text-blue-600 text-white transition-all shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-base md:text-lg font-bold text-white">Create New Quiz</h3>
                   </div>
-                  <h3 className="text-lg font-bold text-white">Create New Quiz</h3>
+                  <div className="md:hidden text-white/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
+                  </div>
                 </div>
 
 
@@ -283,45 +302,49 @@ function Dashboard() {
                     <div
                       key={quiz._id}
                       onClick={() => handleQuizClick(quiz._id)}
-                      className="bg-white rounded-2xl p-6 shadow-card cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 flex flex-col justify-between min-h-[200px] md:min-h-[250px] relative overflow-hidden group border-b-4 border-gray-200 hover:border-blue-500"
+                      className="bg-white rounded-xl p-3 md:p-6 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 flex flex-row md:flex-col items-center md:items-start md:justify-between relative overflow-hidden group border-l-4 md:border-l-0 md:border-b-4 border-gray-200 hover:border-blue-500 md:min-h-[250px] gap-3 md:gap-0"
                     >
                       {/* Delete Button */}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(quiz._id); }}
-                        className="absolute top-4 right-4 z-10 p-2 bg-gray-100 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                        className="absolute top-2 right-2 md:top-4 md:right-4 z-10 p-1.5 md:p-2 bg-gray-50 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all md:opacity-0 md:group-hover:opacity-100"
                         title="Delete Quiz"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
 
-                      <div>
-                        {/* Quiz Icon Placeholder */}
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600 font-black text-xl">
+                      <div className="flex flex-row md:flex-col items-center md:items-start gap-3 md:gap-0 flex-1 min-w-0">
+                        {/* Quiz Icon */}
+                        <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 bg-blue-100 rounded-lg flex items-center justify-center md:mb-4 text-blue-600 font-black text-lg md:text-xl border border-blue-50">
                           {quiz.name.charAt(0).toUpperCase()}
                         </div>
 
-                        <h4 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2 leading-tight">{quiz.name}</h4>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm md:text-xl font-bold text-gray-800 md:mb-2 leading-tight truncate">{quiz.name}</h4>
 
-                        <div className="flex gap-2 mb-3">
-                          {quiz.questionType === 'TrueFalse' && <span className="text-[10px] uppercase font-bold bg-purple-100 text-purple-600 px-2 py-1 rounded">True/False</span>}
-                          {quiz.gameMode === 'RapidFire' && <span className="text-[10px] uppercase font-bold bg-yellow-100 text-yellow-600 px-2 py-1 rounded">Rapid Fire ⚡</span>}
-                          {(!quiz.questionType && !quiz.gameMode) && <span className="text-[10px] uppercase font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded">Quiz</span>}
+                          <div className="flex gap-2 md:mb-3 mt-1 scale-90 md:scale-100 origin-left">
+                            {quiz.questionType === 'TrueFalse' && <span className="text-[9px] md:text-[10px] uppercase font-bold bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded">True/False</span>}
+                            {quiz.gameMode === 'RapidFire' && <span className="text-[9px] md:text-[10px] uppercase font-bold bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded">Rapid Fire</span>}
+                            {(!quiz.questionType && !quiz.gameMode) && <span className="text-[9px] md:text-[10px] uppercase font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Quiz</span>}
+                            <span className="text-[9px] md:text-xs text-gray-400 font-bold uppercase tracking-wide md:hidden ml-2">{quiz.questionList ? quiz.questionList.length : 0} Qs</span>
+                          </div>
+
+                          <p className="text-gray-500 text-sm line-clamp-2 font-medium hidden md:block">{quiz.description || "No description provided."}</p>
                         </div>
-
-                        <p className="text-gray-500 text-sm line-clamp-2 font-medium">{quiz.description || "No description provided."}</p>
                       </div>
 
                       <button
                         onClick={(e) => handleHostGame(e, quiz._id)}
-                        className="mt-4 w-full bg-[#46178f] hover:bg-[#3d1380] text-white font-bold py-2 rounded-lg transition-colors shadow-md z-20 relative flex items-center justify-center gap-2 group-hover:shadow-lg"
+                        className="md:mt-4 w-auto md:w-full bg-[#46178f] hover:bg-[#3d1380] text-white font-bold py-1.5 px-3 md:py-2 rounded-lg transition-colors shadow-sm md:shadow-md z-20 flex items-center justify-center gap-1 md:gap-2 text-xs md:text-base shrink-0"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                         </svg>
-                        Host Game
+                        <span className="hidden md:inline">Host Game</span>
+                        <span className="md:hidden">Host</span>
                       </button>
 
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400 font-bold uppercase tracking-wide">
+                      <div className="mt-4 pt-4 border-t border-gray-100 justify-between items-center text-xs text-gray-400 font-bold uppercase tracking-wide w-full hidden md:flex">
                         <span>{quiz.questionList ? quiz.questionList.length : 0} Qs</span>
                         <span className="group-hover:text-blue-600 transition-colors">Open</span>
                       </div>
