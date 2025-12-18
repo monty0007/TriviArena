@@ -27,6 +27,15 @@ const getAuthHeader = async () => {
   return {};
 };
 
+// Wake up the server (Render Cold Start)
+export const wakeUpServer = async () => {
+  try {
+    fetch(`${API_BASE_URL}/health`);
+  } catch (e) {
+    // Ignore errors, just fire and forget
+  }
+}
+
 // ... existing handleResponse ...
 
 // API requests using Fetch

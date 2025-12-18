@@ -41,6 +41,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/quizes', quizRouter);
 app.use('/api/game', gameRouter);
 
+app.get('/api/health', (req, res) => {
+    res.send("Server is awake");
+})
+
 // 6. Listen on APP
 app.listen(PORT, () => {
     console.log(`Server (API) Running on Port ${PORT}`);

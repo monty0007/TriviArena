@@ -4,10 +4,17 @@ import { Link } from 'react-router-dom'
 import { auth } from './Firebase/Firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 
+import { wakeUpServer } from './Api/Api'
+
 function Mainpage() {
   const [user, setUser] = React.useState(null)
   const [showDropdown, setShowDropdown] = React.useState(false)
   const dropdownRef = React.useRef(null)
+
+  // Wake up server on visit
+  useEffect(() => {
+    wakeUpServer();
+  }, [])
 
   const handleLogout = () => {
     signOut(auth)

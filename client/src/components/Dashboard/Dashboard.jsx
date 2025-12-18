@@ -355,8 +355,14 @@ function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="flex justify-center items-center h-[50vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+          <div className="flex flex-col justify-center items-center h-[50vh] text-center px-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white mb-4"></div>
+            <h3 className="text-xl font-bold text-white mb-2">Waking up the server... 😴</h3>
+            <p className="text-blue-200 max-w-md">
+              We are hosted on a free tier, so the server sleeps when inactive.
+              <br />
+              Please wait about <strong>30-60 seconds</strong> for it to spin up!
+            </p>
           </div>
         )}
       </div>
